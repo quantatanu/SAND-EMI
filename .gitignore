@@ -1,2 +1,4 @@
 # ignore everything inside the build dir
 build/*
+# Except this file
+!build/.gitignore
