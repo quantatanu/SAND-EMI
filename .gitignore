@@ -2,3 +2,9 @@
 build/*
 # Except this file
 !build/.gitignore
+
+
+
+
+# misc dir
+misc/*
