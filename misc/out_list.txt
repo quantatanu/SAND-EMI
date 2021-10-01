@@ -1,0 +1,3 @@
+/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/NNINPUT/out30_chi100_20211001002917_1_files_EXTMUID.root
+/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/NNINPUT/out30_chi100_20211001003338_1_files_EXTMUID.root
+/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/NNINPUT/out30_chi100_20211001003446_1_files_EXTMUID.root

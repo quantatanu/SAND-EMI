@@ -1,0 +1,2263 @@
+
+
+
+// file in fhc_stt_cc_list.txt : EXTMUID barrel module number : top is 0, then it increase counterclockwise, 
+//     0
+//   1   23
+// 2        22
+
+#include "nnTrainedchi110.cxx"
+#include "nnTrainednotL4_chi110.cxx"
+#include "TArc.h"
+#include "TMath.h"
+#include "TCanvas.h"
+#include "TArrow.h"
+#include "TMarker.h"
+
+#include <TGeoManager.h>
+#include <TRandom3.h>
+#include <TString.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TGeoTrd2.h>
+#include <TGeoTube.h>
+#include "TLegend.h"
+#include <cstring>
+#include <cmath>
+#include <sstream>
+#include "TMath.h"
+#include "TStyle.h"
+#include <vector>
+#include <string>
+#include <cstdlib>
+#include <TFile.h>
+#include <TTree.h>
+#include <iostream>
+#include "TCanvas.h"
+#include "TMath.h"
+#include "TG4Event.h"
+#include "TProfile.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+#include "TEllipse.h"
+#include "TBox.h"
+#include "TDatabasePDG.h"
+#include "TStreamerInfo.h"
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <utility>
+#include <functional>
+#include <cassert>
+#include <algorithm>
+#include <cstdio>
+
+#include "utils.h"
+//#include "extmuidgeo.h"
+#include "extrapolatorEXTMUID.h"
+
+using std::endl;
+using std::cout;
+
+std::set<int> fileentry_trk;
+int ientry;
+int ifile;
+double npe1MeV=3.6;
+
+class trackfit{
+    double yc;
+    double zc;
+    double r;
+    double a;
+    double b;
+};
+
+nnTrainedchi110 *mytrainL4;
+nnTrainednotL4_chi110 *mytrainLnot4;
+std::map<int,std::pair<int,int> > sttMap;
+std::map<int,std::pair<int,int> > extmuidMap;
+
+
+extrapolatorEXTMUID *Extrap;
+//extmuidgeo *myEXTMUIDgeo;
+int debug;
+TG4Event* event;
+TTree *nntree;
+TGeoManager *geo;
+TDatabasePDG *dbpdg;
+TRandom3 *ran;
+double centerX=0.;
+double centerY=-2384.73;  // mm
+double centerZ=23910; // mm
+double sigmas=200E-6; // m
+double B=0.6;
+double x0=2.8; // m
+
+//double widths[5]={4.42491, 4.52151, 4.61812, 4.71473,4.821};
+//double widths[5]={12.33,12.33,12.33,12.33,12.66};
+double widths_extmuid[3]={2,15,2};
+
+
+int hit_count_test[3] = {0,0,0};
+int mu_count = 0, pi_count = 0, sig_count = 0;
+
+TH1 *hp_Yoke[2][2];  // type -> inner/outer
+TH1 *hphiPerp[2][2];
+TH1 *hthetaXP[2][2];
+TH1 *hphi_Yoke[2][2];
+
+TH1 *htrueP[2][12];
+
+TH1 *hchi2_cir[2][6];
+TH1 *herr_cir[2];
+
+TH2 *hsig_E_llay;
+TH2 *hbkg_E_llay;
+
+TH1 *hsig_P2len;
+TH1 *hbkg_P2len;
+
+TH2 *hsig_P_len;
+TH2 *hbkg_P_len;
+
+TH1 *h_sigma_extmuidt;
+TH2 *hsig_mreco2_llay;
+TH2 *hbkg_mreco2_llay;
+TH2 *hsig_mreco_llay;
+TH2 *hbkg_mreco_llay;
+
+TH1 *hcate[2][3];
+TH1 *hcateIntEXTMUID[2][3];
+TH1 *hcateNoIntEXTMUID[2][3];
+
+TProfile *h_layer_Evis_IntEXTMUID[2][3];
+TProfile *h_layer_Evis_NoIntEXTMUID[2][3];
+
+
+TH1 *hsig_crossNlayer;
+TH1 *hbkg_crossNlayer;
+
+TH1 *hsig_cellEmax;
+TH1 *hsig_cellEmin;
+TH1 *hsig_cellEavg;
+TH1 *hsig_cellEr;
+TH1 *hsig_cellNtot;
+TH1 *hbkg_cellEmax;
+TH1 *hbkg_cellEmin;
+TH1 *hbkg_cellEavg;
+TH1 *hbkg_cellEr;
+TH1 *hbkg_cellNtot;
+
+TH2 *hsig_E_id;
+TH2 *hsig_Ncell_id;
+TH2 *hsig_Span_id;
+TH2 *hsig_Dis_id;
+TH2 *hbkg_E_id;
+TH2 *hbkg_Ncell_id;
+TH2 *hbkg_Span_id;
+TH2 *hbkg_Dis_id;
+
+TH1 *hsig_llay;
+TH1 *hbkg_llay;
+
+TH1 *hsig_extmuidTdiff;
+TH1 *hbkg_extmuidTdiff;
+
+TH1 *hsig_Eavg;
+TH1 *hsig_Esigma;
+TH1 *hsig_Er;
+TH1 *hsig_Emax;
+TH1 *hsig_Emin;
+
+TH1 *hbkg_Eavg;
+TH1 *hbkg_Esigma;
+TH1 *hbkg_Er;
+TH1 *hbkg_Emax;
+TH1 *hbkg_Emin;
+/////
+TH1 *hsig_Ncellavg;
+TH1 *hsig_Ncellsigma;
+TH1 *hsig_Ncellr;
+TH1 *hsig_Ncellmax;
+TH1 *hsig_Ncellmin;
+
+TH1 *hbkg_Ncellavg;
+TH1 *hbkg_Ncellsigma;
+TH1 *hbkg_Ncellr;
+TH1 *hbkg_Ncellmax;
+TH1 *hbkg_Ncellmin;
+////
+TH1 *hsig_Spanavg;
+TH1 *hsig_Spansigma;
+TH1 *hsig_Spanr;
+TH1 *hsig_Spanmax;
+TH1 *hsig_Spanmin;
+
+TH1 *hbkg_Spanavg;
+TH1 *hbkg_Spansigma;
+TH1 *hbkg_Spanr;
+TH1 *hbkg_Spanmax;
+TH1 *hbkg_Spanmin;
+
+TH2 *hvtxXY2;
+TH2 *hvtxZY2;
+TH3 *hvtxXYZ2;
+TH2 *hvtxXY3;
+TH2 *hvtxZY3;
+TH3 *hvtxXYZ3;
+
+
+
+TProfile *mom_rad;
+//std::ofstream track_info ("/nashome/a/anath/track_info.txt", std::ofstream::trunc);
+//std::ofstream track_end ("/nashome/a/anath/track_end.txt", std::ofstream::trunc);
+
+
+/////
+bool  BpionNoIC5;
+double BP;
+double Bextmuidlen;
+int Bifile;
+int Bientry;
+int Btrackid;
+double Bmreco;
+double BE;
+int BLlayer;
+bool   Btype;
+int BFlayer;
+bool BIsMagnet;
+double BcellEmax;
+double BcellEr;
+double BcellNtot;
+double BcellEmin;
+double BcellEavg;
+double BextmuidTdiff;
+double BlayerEmean;
+double BlayerErms;
+double BlayerEr;
+double BlayerEL4;
+double BlayerEL3;
+double BlayerEmax;
+double BlayerEmin;
+double BlayerNcellL0;
+double BlayerNcellL1;
+double BlayerNcellL2;
+double BlayerNcellL3;
+double BlayerNcellL4;
+double BlayerNcellmax;
+double BlayerNcellmin;
+double BlayerNcellr;
+double BlayerNcellmean;
+
+
+/* FUNCTION DECLARATIONS */
+void organizeHits();
+bool inSTT(double x, double y,double z);
+bool inSTT(const TVector3 &pos);
+bool inFV(double x, double y, double z);
+bool inYoke(double x, double y,double z);
+bool inEXTMUIDbarrel(const TVector3 &pos);
+double Attenuation(double d, int planeID);
+double E2PE(double E);
+void showAll();
+bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double intX, double intY, double intZ, std::map<int, std::pair<int,double> > &Id_npe_earliestT, double &extmuidTdiff, std::vector<int> DaughterIds);
+std::vector<std::string> makefilelist(std::string st,int Nfilelist);
+bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double intX, double intY, double intZ, std::map<int, std::pair<int,double> > &Id_npe_earliestT, double &extmuidTdiff, std::vector<int> DaughterIds);
+std::map <int, float> getInfo(std::map<int, std::pair<int, double> > Id_npe_earliestT, double &earliestCellE, double &earliestT, double *layer_extmuid_Evis, double *layer_extmuid_NcellEXTMUID, double *layer_span, double *layer_dis, double &cellEXTMUIDEmax, double &cellEXTMUIDEmin, double &cellEXTMUIDEavg, double &cellEXTMUIDEr, double &nCelltot);
+void getMuSigma(double *Id_Evis, double &mu, double &sigma);
+void getVertCoord(const std::vector<double>& z_v, std::vector<double>& y_v,  int sign, double  zc, double yc, double r);
+bool sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &r, double &zc, double &yc, double &b, double &err, double chi2_cr[]);
+bool sttreconstructable2(int trackid, TVector3 &p3);
+bool sttreconstructable(int trackid, TVector3 &p3);
+int getDaughters(int trackid, std::vector<int> &daughterIds, std::vector<std::string> &daughterNames);
+bool Interact_InEXTMUID(bool &endInSTT, bool &endInYoke, int trackid, double &x, double &y, double &z, std::vector<int> &daughterIds, std::vector<std::string> &daughterNames);
+bool getPosP_enteringEXTMUID(int trackid, double &dis, double &t1, double &t2, double &p1, double &p2, double &radius);
+//int  getLatestLay(std::map<int, double> Id_Evis, std::map<int, double> Id_Ts);
+bool findRecoMass(double &recomass, int trackid, double earliestT, const TVector3 &initP);
+bool getRecoMass(double &mreco, double &mreco2, double dis2extmuid, double p, double t0, double textmuid, double cellE);
+bool gettrklengthEXTMUID(double &lenEXTMUID, int trackid, int lastlayer,  double r, double zc, double yc, const TVector3 &initPos, double b);
+void fillYokeInfo(int isurface, double x, double y, double z, const TVector3 & p3);
+void getYokeSurfaceInfo(int trackid, int &iOuter, int &iInner);
+void getMuPi_kinematics();
+//---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+/* MAIN STARTS 
+*/
+int main(int argc, char *argv[]){
+    //if(argc<4) { std::cout<<"need at least 4 parameters: startfile, nfile, and outfilename + optional: debug0/1/2/3, testStartEntry, testNEntry "<<std::endl; return 0;}
+    if(argc<6) { std::cout<<"need at least 4 parameters: startfile, nfile, outfilename, file time tag, and the particle  name"<<std::endl; return 0;}
+	std::string out_txt(argv[5]);
+	std::string particle(argv[6]);
+	//std::cout << "\nout_txt: " << out_txt << "\n\n";
+	//return 0;	
+	std::string prim_track_info_f = std::string("/nashome/a/anath/prim_track_info_") + particle + std::string("_") + out_txt + std::string(".txt");
+	std::string prim_track_end_f = std::string("/nashome/a/anath/prim_track_end_") + particle + std::string("_") + out_txt + std::string(".txt");
+	std::string sec_track_info_f = std::string("/nashome/a/anath/sec_track_info_") + particle + std::string("_") + out_txt + std::string(".txt");
+	std::string sec_track_end_f = std::string("/nashome/a/anath/sec_track_end_") + particle + std::string("_") + out_txt + std::string(".txt");
+	std::ofstream prim_track_info (prim_track_info_f.c_str(), std::ofstream::trunc);
+	std::ofstream prim_track_end (prim_track_end_f.c_str(), std::ofstream::trunc);
+	std::ofstream sec_track_info (sec_track_info_f.c_str(), std::ofstream::trunc);
+	std::ofstream sec_track_end (sec_track_end_f.c_str(), std::ofstream::trunc);
+	std::cout << "complete prim_track info in :  " << prim_track_info_f << "\n";
+	std::cout << "complete prim_track end in :  " << prim_track_end_f << "\n";
+	std::cout << "complete sec_track info in :  " << sec_track_info_f << "\n";
+	std::cout << "complete sec_track end in :  " << sec_track_end_f << "\n";
+	std::cout << "Info format: (distances in cm, angle in rad. and mom. in GeV/c)\n";
+	std::cout << "radial dist. 	phi		dX 		dY		dZ		 mom \n";
+    //showAll(); 
+  
+    //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
+    int startfile=std::atoi(argv[1]);
+    int nfile=std::atoi(argv[2]);
+    const char *outfile=argv[3];
+    std::string file_list = argv[4];
+    //std::vector<std::string> files=makefilelist("ananu_fhc_edep_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
+    std::vector<std::string> files=makefilelist(file_list, 0); //edep_fhc_stt_boundarypts_list.txt");
+    std::cout << "File list: " << file_list << " [" << files.size() <<  " files] \n";
+
+    if (files.size() < nfile)
+    {
+        std::cout << "requested nfile: " << nfile << " > " << " # of files in the list file: " << files.size() << ", therefore, processing only " << files.size() << " files!\n";
+        nfile = files.size();
+    }
+
+    debug=0;
+
+    //COMMENTING OUT WHOLE DEBUG SECTION TO INPUT EXTMUID ACTIVE VOL NAME
+    /* 
+    if(argc>=5){
+	if(std::strcmp(argv[4],"debug0")==0) debug=0;
+	else if(std::strcmp(argv[4],"debug1")==0) debug=1;
+	else if(std::strcmp(argv[4],"debug2")==0) debug=2;
+	else if(std::strcmp(argv[4],"debug3")==0) debug=3;
+    }*/
+    int testStartEntry=-1;
+    int testNEntry=-1;
+    /*
+    if(argc>=6) { testStartEntry=std::atoi(argv[5]);}
+    if(argc==7) { testNEntry=std::atoi(argv[6]);}
+    */
+
+    TFile *file;  
+    //  TG4Event* event=NULL;
+    TTree* gEDepSimTree = NULL;
+    TTree* rootrackerTree;
+    TBranch * brEvtVtx;
+    double      EvtVtx[4];
+    double x,y,z;
+
+    ran=new TRandom3(0); /// <set it to 0 so everytime it will run with different seed
+
+    TFile *outf=new TFile(outfile,"recreate");
+    //  TTree *nntree;
+    nntree=new TTree("nntree","variables for nn analysis");
+    nntree->Branch("ifile", &Bifile, "ifile/I");
+    nntree->Branch("ientry", &Bientry, "ientry/I");
+    nntree->Branch("trackid", &Btrackid, "trackid/I");
+  
+    nntree->Branch("E", &BE, "E/D");
+    nntree->Branch("pionNoIC5", &BpionNoIC5, "pionNoIC5/O");
+    nntree->Branch("P", &BP, "P/D");
+    nntree->Branch("extmuidlen", &Bextmuidlen, "extmuidlen/D");
+    nntree->Branch("type", &Btype, "type/O");
+    nntree->Branch("mreco", &Bmreco, "mreco/D");
+    nntree->Branch("BLlayer", &BLlayer, "BLlayer/I");
+    nntree->Branch("BFlayer", &BFlayer, "BFlayer/I");
+    nntree->Branch("BIsMagnet", &BIsMagnet, "BIsMagnet/O");
+    nntree->Branch("cellEmax", &BcellEmax, "cellEmax/D");
+    nntree->Branch("cellEavg",&BcellEavg,"cellEavg/D");
+    nntree->Branch("cellEr", &BcellEr, "cellEr/D");
+    nntree->Branch("cellEmin", &BcellEmin, "cellEmin/D");
+    nntree->Branch("cellNtot", &BcellNtot, "cellNtot/D");
+    nntree->Branch("extmuidTdiff",&BextmuidTdiff,"extmuidTdiff/D");
+    nntree->Branch("layerEmean", &BlayerEmean, "layerEmean/D");
+    nntree->Branch("layerErms", &BlayerErms, "layerErms/D");
+    nntree->Branch("layerEr", &BlayerEr, "layerEr/D");
+    nntree->Branch("layerEL4", &BlayerEL4, "layerEL4/D");
+    nntree->Branch("layerEL3", &BlayerEL3, "layerEL3/D");
+    nntree->Branch("layerEmax", &BlayerEmax, "layerEmax/D");
+    nntree->Branch("layerEmin", &BlayerEmin, "layerEmin/D");
+    nntree->Branch("layerNcellL0", &BlayerNcellL0, "layerNcellL0/D"); 
+    nntree->Branch("layerNcellL1", &BlayerNcellL1, "layerNcellL1/D");
+    nntree->Branch("layerNcellL2", &BlayerNcellL2, "layerNcellL2/D");
+    nntree->Branch("layerNcellL3", &BlayerNcellL3, "layerNcellL3/D");
+    nntree->Branch("layerNcellL4", &BlayerNcellL4, "layerNcellL4/D");
+    nntree->Branch("layerNcellmax", &BlayerNcellmax, "layerNcellmax/D");
+    nntree->Branch("layerNcellmin", &BlayerNcellmin, "layerNcellmin/D");
+    nntree->Branch("layerNcellr", &BlayerNcellr, "layerNcellr/D");
+    nntree->Branch("layerNcellmean", &BlayerNcellmean, "layerNcellmean/D");
+  
+    std::string partype[2]={"bkg","sig"};
+    std::string surf[2]={"inner","outer"};
+
+    for(int i=0;i<2;i++){
+        for(int j=0;j<2;j++){
+            hp_Yoke[i][j]=new TH1F(Form("hp_Yoke_%s_%s",partype[i].c_str(), surf[j].c_str()), "",100,0,5000);
+            hphi_Yoke[i][j]=new TH1F(Form("hphi_Yoke_%s_%s",partype[i].c_str(), surf[j].c_str()),"",200,-180,180);
+            hphiPerp[i][j]=new TH1F(Form("hphiPerp_%s_%s",partype[i].c_str(), surf[j].c_str()),"",100,-90,90);
+            hthetaXP[i][j]=new TH1F(Form("hthetaXP_%s_%s",partype[i].c_str(), surf[j].c_str()),"",100,-90,90);
+        }
+    }
+
+    for(int i=0;i<2;i++){
+        for(int j=0;j<12;j++){
+            htrueP[i][j]=new TH1F(Form("htrueP_%s_%d",partype[i].c_str(), j), "", 500,0,5000);
+        }
+
+        for(int j=0;j<2;j++){
+            hcate[i][j]=new TH1I(Form("hcate_%s_%d",partype[i].c_str(), j),"",4,0,4);
+            hcateIntEXTMUID[i][j]=new TH1I(Form("hcateIntEXTMUID_%s_%d",partype[i].c_str(), j),"",3,0,3);
+            hcateNoIntEXTMUID[i][j]=new TH1I(Form("hcateNoIntEXTMUID_%s_%d",partype[i].c_str(), j),"",3,0,3);
+            h_layer_Evis_IntEXTMUID[i][j]=new TProfile(Form("h_layer_Evis_IntEXTMUID_%s_%d",partype[i].c_str(), j),"",3,0,3);
+            h_layer_Evis_NoIntEXTMUID[i][j]=new TProfile(Form("h_layer_Evis_NoIntEXTMUID_%s_%d",partype[i].c_str(), j),"",3,0,3);
+        }
+        hchi2_cir[i][0]=new TH1F(Form("hchi2v0_cir_%s",partype[i].c_str()),"",800,0, 40000);
+        hchi2_cir[i][1]=new TH1F(Form("hchi2v1_cir_%s",partype[i].c_str()),"",800,0, 1);
+        hchi2_cir[i][2]=new TH1F(Form("hchi2v2_cir_%s",partype[i].c_str()),"",800,0, 5);
+        hchi2_cir[i][3]=new TH1F(Form("hchi2v3_cir_%s",partype[i].c_str()),"",800,0, 150);
+        hchi2_cir[i][4]=new TH1F(Form("hchi2v4_cir_%s",partype[i].c_str()),"",800,0, 60);
+        hchi2_cir[i][5]=new TH1F(Form("hchi2v5_cir_%s",partype[i].c_str()),"",800,0, 1000);
+
+        herr_cir[i]=new TH1F(Form("herr_cir_%s",partype[i].c_str()),"",400,0, 100);
+    }
+    hsig_P2len=new TH1F("hsig_P2len","", 100,0, 20);
+    hbkg_P2len=new TH1F("hbkg_P2len","", 100,0, 20);
+  
+    hsig_P_len=new TH2F("hsig_P_len","", 50,100,800, 50,0, 400);
+    hbkg_P_len=new TH2F("hbkg_P_len","", 50,100,800, 50,0, 400);
+
+    h_sigma_extmuidt=new TH1F("h_sigma_extmuidt","",200,0,4);
+    hsig_E_llay=new TH2F("hsig_E_llay","",200,0, 800, 5, 0,5);
+    hbkg_E_llay=new TH2F("hbkg_E_llay","",200,0, 800, 5, 0, 5);
+  
+    hsig_mreco2_llay=new TH2F("hsig_mreco2_llay","",200,0,500,5,0,5);
+    hbkg_mreco2_llay=new TH2F("hbkg_mreco2_llay","",200,0,500,5,0,5);
+    hsig_mreco_llay=new TH2F("hsig_mreco_llay","",200,0,500,5,0,5);
+    hbkg_mreco_llay=new TH2F("hbkg_mreco_llay","",200,0,500,5,0,5);
+
+    hsig_extmuidTdiff=new TH1F("hsig_extmuidTdiff","",100,0,20);
+    hbkg_extmuidTdiff=new TH1F("hbkg_extmuidTdiff","",100,0,20);
+
+    hsig_crossNlayer=new TH1I("hsig_crossNlayer","",6,0,6);
+    hbkg_crossNlayer=new TH1I("hbkg_crossNlayer","",6,0,6);
+
+    hsig_cellEmax=new TH1F("hsig_cellEmax","",100,0,50);
+    hsig_cellEmin=new TH1F("hsig_cellEmin","",100,0,10);
+    hsig_cellEavg=new TH1F("hsig_cellEavg","",100,0,20);
+    hsig_cellEr=new TH1F("hsig_cellEr","",100,0,1);
+    hsig_cellNtot=new TH1F("hsig_cellNtot","",25,0,25);
+    hbkg_cellEmax=new TH1F("hbkg_cellEmax","",100,0,50);
+    hbkg_cellEmin=new TH1F("hbkg_cellEmin","",100,0,10);
+    hbkg_cellEavg=new TH1F("hbkg_cellEavg","",100,0,20);
+    hbkg_cellEr=new TH1F("hbkg_cellEr","",100,0,1);
+    hbkg_cellNtot=new TH1F("hbkg_cellNtot","",25,0,25);
+
+    hsig_E_id=new TH2F("hsig_E_id","",100,0,40, 5,0,5);
+    hbkg_E_id=new TH2F("hbkg_E_id","",100,0,40, 5,0,5);
+    hsig_Ncell_id=new TH2F("hsig_Ncell_id","",10,0,10, 5,0,5);
+    hbkg_Ncell_id=new TH2F("hbkg_Ncell_id","",10,0,10, 5,0,5);
+    hsig_Span_id=new TH2F("hsig_Span_id","",60,0,60, 5,0,5);
+    hbkg_Span_id=new TH2F("hbkg_Span_id","",60,0,60, 5,0,5);
+    hsig_Dis_id=new TH2F("hsig_Dis_id","",100,0,5, 5,0,5);
+    hbkg_Dis_id=new TH2F("hbkg_Dis_id","",100,0,5, 5,0,5);
+    /////////
+    hsig_Eavg=new TH1F("hsig_Eavg","",100,0,30);
+    hsig_Esigma=new TH1F("hsig_Esigma","",50,0,30);
+    hsig_Er=new TH1F("hsig_Er","",50,0,1);
+    hsig_Emax=new TH1F("hsig_Emax","",100,0,60);
+    hsig_Emin=new TH1F("hsig_Emin","",100,0,20);
+
+    hbkg_Eavg=new TH1F("hbkg_Eavg","",100,0,30);
+    hbkg_Esigma=new TH1F("hbkg_Esigma","",50,0,30);
+    hbkg_Er=new TH1F("hbkg_Er","",50,0,1);
+    hbkg_Emax=new TH1F("hbkg_Emax","",100,0,60);
+    hbkg_Emin=new TH1F("hbkg_Emin","",100,0,20);
+    ///////
+    hsig_Ncellavg=new TH1F("hsig_Ncellavg","",100,0,5);
+    hsig_Ncellsigma=new TH1F("hsig_Ncellsigma","",50,0,3);
+    hsig_Ncellr=new TH1F("hsig_Ncellr","",50,0,1);
+    hsig_Ncellmax=new TH1F("hsig_Ncellmax","",10,0,10);
+    hsig_Ncellmin=new TH1F("hsig_Ncellmin","",10,0,10);
+
+    hbkg_Ncellavg=new TH1F("hbkg_Ncellavg","",100,0,5);
+    hbkg_Ncellsigma=new TH1F("hbkg_Ncellsigma","",50,0,3);
+    hbkg_Ncellr=new TH1F("hbkg_Ncellr","",50,0,1);
+    hbkg_Ncellmax=new TH1F("hbkg_Ncellmax","",10,0,10);
+    hbkg_Ncellmin=new TH1F("hbkg_Ncellmin","",10,0,10);
+    /////////
+    hsig_Spanavg=new TH1F("hsig_Spanavg","",100,0,25);
+    hsig_Spansigma=new TH1F("hsig_Spansigma","",50,0,20);
+    hsig_Spanr=new TH1F("hsig_Spanr","",50,0,1);
+    hsig_Spanmax=new TH1F("hsig_Spanmax","",50,0,30);
+    hsig_Spanmin=new TH1F("hsig_Spanmin","",50,0,20);
+    hbkg_Spanavg=new TH1F("hbkg_Spanavg","",100,0,25);
+    hbkg_Spansigma=new TH1F("hbkg_Spansigma","",50,0,20);
+    hbkg_Spanr=new TH1F("hbkg_Spanr","",50,0,1);
+    hbkg_Spanmax=new TH1F("hbkg_Spanmax","",50,0,30);
+    hbkg_Spanmin=new TH1F("hbkg_Spanmin","",50,0,20);
+    ///////////////
+    hsig_llay=new TH1F("hsig_llay","",5,0,5);
+    hbkg_llay=new TH1F("hbkg_llay","", 5,0,5);
+
+    TH2F *hvtxXY=new TH2F("hvtxXY","",320,-1800,1400,390,-1500,2400);
+    TH2 *hvtxZY=new TH2F("hvtxZY","",400,-800,3200,390,-1500, 2400);
+    TH3 *hvtxXYZ=new TH3F("hvtxXYZ","",64,-1800,1400, 78,-1500, 2400, 80,-800,3200);
+  
+    hvtxXY2=new TH2F("hvtxXY2","",320,-1800,1400,390,-1500,2400);
+    hvtxZY2=new TH2F("hvtxZY2","",400,-800,3200,390,-1500, 2400);
+    hvtxXYZ2=new TH3F("hvtxXYZ2","",64,-1800,1400, 78,-1500, 2400, 80,-800,3200);
+
+    hvtxXY3=new TH2F("hvtxXY3","",320,-1800,1400,390,-1500,2400);
+    hvtxZY3=new TH2F("hvtxZY3","",400,-800,3200,390,-1500, 2400);
+    hvtxXYZ3=new TH3F("hvtxXYZ3","",64,-1800,1400, 78,-1500, 2400, 80,-800,3200);
+
+    TH2F *hvtxXY_sig=new TH2F("hvtxXY_sig","",320,-1800,1400,390,-1500,2400);
+    TH2 *hvtxZY_sig=new TH2F("hvtxZY_sig","",400,-800,3200,390,-1500, 2400);
+
+    dbpdg=new TDatabasePDG();
+    Extrap=new extrapolatorEXTMUID(0.6);
+
+  
+    std::ifstream myinfile;
+    std::string line;
+    myinfile.open("badevent2.txt");
+    int Ifile, Ientry, Itrackid;
+    double nn;
+    for(int aa = 0;aa<21;aa++){
+        if(getline(myinfile,line)){
+            std::istringstream iss(line);
+            iss>>nn>>Ifile>>Ientry>>Itrackid;
+            fileentry_trk.insert(Ifile*1000000 + Ientry*100 + Itrackid);
+        }
+    }
+  
+    mytrainL4=new nnTrainedchi110();
+    mytrainLnot4=new nnTrainednotL4_chi110();
+
+    for(ifile=startfile ;ifile<nfile+startfile;ifile++){
+    
+	//    myEXTMUIDgeo=new extmuidgeo();
+	//    myEXTMUIDgeo->Init(0,false,"extmuidgeo_"+std::to_string(ifile)+".pdf");
+
+	Bifile=ifile;
+	std::cout<<"files[ifile]:"<<files[ifile]<<std::endl;
+	file=new TFile(files[ifile].c_str());
+	gEDepSimTree = (TTree*) file->Get("EDepSimEvents");
+	geo = (TGeoManager*) file->Get("EDepSimGeometry");
+	gEDepSimTree->SetBranchAddress("Event",&event);
+	int nentry=gEDepSimTree->GetEntries();
+	cout<<"*******-----------------ifile:"<<ifile<<" "<<files[ifile]<<" nentry:"<<nentry<<std::endl;
+
+	rootrackerTree=(TTree*)file->Get("DetSimPassThru/gRooTracker");
+	brEvtVtx   = rootrackerTree -> GetBranch ("EvtVtx");
+	brEvtVtx    -> SetAddress (EvtVtx);
+    
+	int startEntry=(testStartEntry!=-1)?testStartEntry:0;
+	int endplusEntry=(testNEntry!=-1)?(startEntry+testNEntry):nentry;
+	for(int i=startEntry;i<endplusEntry;i++){
+	    if(i%500==0) 
+		std::cout<<"ientry:"<<i<<std::endl;
+	    if(debug>=1) std::cout<<"---------ientry:"<<i<<std::endl;
+	    ientry=i;
+	    Bientry=ientry;
+	    gEDepSimTree->GetEntry(i);
+	    rootrackerTree->GetEntry(i);
+
+	    TLorentzVector vtx=event->Primaries.begin()->GetPosition();
+
+        
+	    //getMuPi_kinematics();
+	    if(!inFV(vtx.X(),vtx.Y(),vtx.Z())) continue;
+			
+
+	    //std::cout<<"in fiducial"<<std::endl;
+	    //      getEdep_inextmuid(i, event, crossEXTMUID);
+
+    //for debugging .. comment this for loop
+    /* 
+    for (auto d = event->SegmentDetectors.begin();
+                     d != event->SegmentDetectors.end(); ++d)
+                { cout << d->first << endl;} 
+            continue;	
+    */
+
+        if(debug>=3) showAll();
+	   // showAll(); //for debugging, comment later: Atanu
+	    //getMuPi_kinematics(); //commenting out for now : ATANU feb 1 2021
+		
+		//momentum filling ATANU-------------------------------------------------------------
+		int total_tracks = event->Trajectories.size();
+		for(int iTiD = 0; iTiD < total_tracks; iTiD++)
+		{
+					if(event->Trajectories[iTiD].Name.empty()) continue;
+					std::string name=event->Trajectories[iTiD].Name;
+					//stdd:cout << __LINE__ << "Size: " << event->Trajectories.size() << ", iTiD: " << iTiD << ", Name: " << name << ", \n";
+					//double startY = centerY/10., startZ = centerZ/10.;
+					double mom = 0, rad = 0, points = 0; 
+					double trk_length = 0; 
+					double endX = centerX;
+					double endY = centerY;
+					double endZ = centerZ;
+					double endRad = 0;
+					double endPhi = 0;
+					double posX =0;
+					double posY =0;
+					double posZ =0;
+					double dX =0;
+					double dZ =0;
+					double dY =0;
+					double phi = 0;
+						//std::cout << "\n????????????????????? "<< particle <<" ..........\n";
+					if(name == particle)
+					//if(name == "pi-")
+					{
+
+						std::cout << "\nOK " << name << " = " << particle <<" ..........\n";
+							for (auto& it : event->Trajectories[iTiD].Points)
+							{
+								posX = it.Position.X();
+								posY = it.Position.Y();
+								posZ = it.Position.Z();
+								dX = posX/10-centerX/10.;
+								dZ =-(centerZ-posZ)/10.;
+								dY =-(centerY-posY)/10.;
+								rad = sqrt(pow(dY,2)+pow(dZ,2));
+								phi = atan((dY/dZ)); //radian
+								// phi = 90.0 - atan(abs(dZ/dY))*180./TMath::Pi();
+								// phi = atan((dY/dZ))*180./TMath::Pi();
+								//if(phi < 0) phi = 360. + phi;
+								TGeoNode *nod = geo->FindNode(posX, posY, posZ);
+								TString node_name = nod->GetName();
+								//if(it.Process != 1) continue; //boundary crossing events only
+								mom = sqrt(pow(it.Momentum.X(),2)+pow(it.Momentum.Y(),2)+pow(it.Momentum.Z(),2))/1000.;
+								//if (it.Momentum.Z() < 0) continue; //forward only
+								if	(event->Trajectories[iTiD].ParentId==-1)
+								{
+									prim_track_info << rad << "\t" << phi << "\t" << dX << "\t" << dY << "\t" << dZ << "\t" << mom << "\n";
+								} else {
+									sec_track_info << rad << "\t" << phi << "\t" << dX << "\t" << dY << "\t" << dZ << "\t" << mom << "\n";
+								}
+							}
+							endX =  (centerX - (event->Trajectories[iTiD].Points.end()-1)->Position.X())/10.;
+							endY =  (centerY - (event->Trajectories[iTiD].Points.end()-1)->Position.Y())/10.;
+							endZ =  (centerZ - (event->Trajectories[iTiD].Points.end()-1)->Position.Z())/10.;
+							endRad = sqrt(pow(endY,2)+pow(endZ,2));
+							endPhi = atan((endY/endZ));
+							if	(event->Trajectories[iTiD].ParentId==-1)
+							{
+								prim_track_end << endRad << "\t" << endPhi << "\t" << dX << "\t" << dY << "\t" << dZ << "\t" << mom << "\n";//last values
+							} else {
+								sec_track_end << endRad << "\t" << endPhi << "\t" << dX << "\t" << dY << "\t" << dZ << "\t" << mom << "\n";//last values
+							}
+					}
+				}	
+			//momentum filling ATANU-------------------------------------------------------------
+			
+
+	}
+	file->Close();
+	//    delete myEXTMUIDgeo;
+
+    }
+    /////////////////
+
+    outf->Write();
+    outf->Close();
+	prim_track_info.close();
+	prim_track_end.close();
+	sec_track_info.close();
+	sec_track_end.close();
+
+    std::cout << "\n\nHits:                              \n";
+    std::cout << "plane 0:" << hit_count_test[0] << "\n";
+    std::cout << "plane 1:" << hit_count_test[1] << "\n";
+    std::cout << "plane 2:" << hit_count_test[2] << "\n\n";
+    std::cout << "mu count: " << mu_count  << " [sig_count: " << sig_count << "], pi count: " << pi_count << "\n";
+	std::cout << "complete prim_track info in :  " << prim_track_info_f << "\n";
+	std::cout << "complete prim_track end in :  " << prim_track_end_f << "\n";
+	std::cout << "complete sec_track info in :  " << sec_track_info_f << "\n";
+	std::cout << "complete sec_track end in :  " << sec_track_end_f << "\n";
+	std::cout << "Info format: (distances in cm, angle in rad. and mom. in GeV/c)\n";
+	std::cout << "radial dist. 	phi		dX 		dY		dZ		 mom \n";
+	
+}
+//----------------------------------------MAIN ENDS---------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+------------------------------------------FUNCTION DEFINITIONS----------------------------------------------
+*/
+bool inSTT(double x, double y,double z){
+    if(abs(x)>1690) return false;
+    double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
+    if(r>2000) return false;
+    return true;
+}
+
+bool inSTT(const TVector3 &pos){
+    return inSTT(pos.X(),pos.Y(),pos.Z());
+}
+
+bool inFV(double x, double y, double z){
+    //  double centerX=0.;
+    if(abs(x)>1490) return false;
+    double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
+    if(r>1800) return false;
+    return true;
+}
+
+bool inYoke(double x, double y,double z){
+    if(abs(x)>1690) return false;
+    double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
+    if(r>3300) return false;
+    return true;
+}
+
+bool inYoke(const TVector3 &pos){
+    return inYoke(pos.X(),pos.Y(),pos.Z());
+}
+
+
+
+bool inEXTMUIDbarrel(const TVector3 &pos){
+    double x=pos.X();
+    double y=pos.Y();
+    double z=pos.Z();
+    double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
+    if(r<3300+0.5 || r>3300+0.5+20+150+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
+    //if(r>3300+20 && r<3300+20+150) return false; //inside the passive layer
+    if(abs(x)>2150) return false;
+    return true;
+}
+
+double Attenuation(double d, int planeID)
+{
+    /*
+      dE/dx attenuation - Ea=p1*exp(-d/atl1)+(1.-p1)*exp(-d/atl2)
+      d    distance from photocatode - 2 cells/cell; d1 and d2
+      atl1  50. cm
+      atl2  430 cm planes 1-2    innermost plane is 1
+      380 cm plane 3
+      330 cm planes 4-5
+      p1   0.35
+    */
+    const double p1 = 0.35;
+    const double alt1 = 500.;
+    double alt2 = 0.0;
+
+    //std::cout << "LINE: ATTENUATION:, planeID: " << planeID << "\n";
+    switch (planeID) {
+    case 0:
+	//std::cout << "case 0: nothing" << alt2 << std::endl;
+    case 1:
+	alt2 = 4300.0;
+	//std::cout << "case 1: alt2 = " << alt2 << std::endl;
+	break;
+    
+    default:
+	//std::cout << "planeID out of range" << std::endl;
+	alt2 = -999.0;
+	break;
+    }
+
+    return p1 * TMath::Exp(-d / alt1) + (1. - p1) * TMath::Exp(-d / alt2);
+}
+
+
+
+
+double E2PE(double E)
+{
+    // Average number of photoelectrons = 25*Ea(MeV)
+    const double e2p2 = 25.;
+    return e2p2*E;
+}
+
+
+
+void showAll(){
+    std::cout<<"============================================="<<std::endl;
+    for (std::vector<TG4Trajectory>::iterator
+	     t = event->Trajectories.begin();
+	 t != event->Trajectories.end(); ++t) {
+	std::cout << "   Traj " << t->TrackId;
+	std::cout << " " << t->ParentId;
+	std::cout << " " << t->Name;
+	std::cout << " " << t->Points.size();
+	std::cout<< " E:"<<t->GetInitialMomentum().E();
+	std::cout<<" beginpro:"<<t->Points.begin()->Process<<" "<<t->Points.begin()->Subprocess<<" endpro:"<<(t->Points.end()-1)->Process<<" "<<(t->Points.end()-1)->Subprocess;
+	std::cout << std::endl;
+    }
+    for (auto d = event->SegmentDetectors.begin();
+	 d != event->SegmentDetectors.end(); ++d) {
+	std::cout << "   detector: " << d->first;
+	std::cout << " " << d->second.size();
+	int count = 10;
+	std::cout << " up to " << count << " segments";
+	std::cout << std::endl;
+	//    if(d->first!="Straw") continue;
+	int i=0;
+        for (std::vector<TG4HitSegment>::iterator
+             h = d->second.begin();
+             h != d->second.end();
+             ++h) {
+            std::cout << "      "<<i;
+            i++;
+            std::cout << " P: " << h->PrimaryId<<" "<<h->Contrib[0];
+            std::cout << " E: " << h->EnergyDeposit;
+            std::cout << " S: " << h->SecondaryDeposit;
+            std::cout << " C: " << h->Contrib.size()<<"->";
+            for(unsigned long j=0;j<h->Contrib.size();j++){
+            std::cout<<" "<<h->Contrib[j];
+            }
+            //      std::cout<<" name:"<<h->GetVolName();
+            //            std::cout << " L: " << h->TrackLength;
+            TLorentzVector mid= (h->Start+h->Stop)*0.5;
+            TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
+            std::cout<<" "<<name;
+            std::cout<<" start:"<<h->Start.X()<<" "<<h->Start.Y()<<" "<<h->Start.Z()<<" "<<h->Start.T()<<" endT:"<<h->Stop.T();
+            //      if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) std::cout<<"   !!!!!!! time reverted";
+            std::cout<<std::endl;
+        }
+    }
+
+    std::cout<<"============================================="<<std::endl;
+}
+
+
+
+//std::vector<std::string> makefilelist(std::string st,int Nfilelist=0){
+std::vector<std::string> makefilelist(std::string st,int Nfilelist){
+    // if Nfilelist is 0, then the default means input all the lines/files  i have.
+    std::vector<std::string> files;
+    files.clear();
+
+    std::ifstream filelist(st.c_str());
+    //count how many lines in the filelistlist
+    int num=std::count(std::istreambuf_iterator<char>(filelist), std::istreambuf_iterator<char>(), '\n');
+
+    if(Nfilelist==0)
+	Nfilelist=num;
+    else if(Nfilelist>num)
+	std::cout<<"we don't have that many filelist, please change the  number."<<std::endl;
+    //the following close and reopen is important, cause if you didn't close, right now the pointer is at the end of the filelistlist
+    filelist.close();
+    filelist.open(st.c_str());
+
+    std::string onefile;
+    for(int i=0;i<Nfilelist;i++){
+	getline(filelist,onefile);
+	files.push_back(onefile);
+    }
+    filelist.close();
+    return files;
+}//////////////////////////////////////////////////////////////////
+
+
+
+
+bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double intX, double intY, double intZ, std::map<int, std::pair<int,double> > &Id_npe_earliestT, double &extmuidTdiff, std::vector<int> DaughterIds){
+
+    //  Id_Evis.clear();
+
+    Id_npe_earliestT.clear();
+  
+    double Tstart=9999999;
+    double Tend=-999999;
+    ////// for muon, only consider muon's own hits, for pion, need to consider all its daughters' hits
+    unsigned int ihit;
+    int nhit;
+
+    if(!isbkg){ // mu
+        ihit=extmuidMap[trackid].first;
+        nhit=extmuidMap[trackid].second;
+    }
+    else{  // pion
+        ihit=0;
+        nhit=event->SegmentDetectors["EXTMUID"].size();
+    }
+
+
+
+    for(unsigned int i=ihit; i<(ihit+nhit); i++){
+        const TG4HitSegment& h = event->SegmentDetectors["EXTMUID"].at(i);
+        double de=h.EnergyDeposit;
+        double x = 0.5*(h.Start.X()+h.Stop.X());
+        double y = 0.5*(h.Start.Y()+h.Stop.Y());
+        double z = 0.5*(h.Start.Z()+h.Stop.Z());
+
+        if(isbkg  && h.PrimaryId!=trackid && h.Contrib[0]!=trackid && std::find(DaughterIds.begin(), DaughterIds.end(), h.PrimaryId)==DaughterIds.end() && std::find(DaughterIds.begin(), DaughterIds.end(), h.Contrib[0])==DaughterIds.end()) continue;
+        
+        //    double dis2int=sqrt(pow(intX-x,2)+pow(intY-y,2)+pow(intZ-z,2));
+        double dis2int=sqrt(pow(intY-y,2)+pow(intZ-z,2));
+        //if(isbkg && DaughterIds.size()>0 && dis2int>600) { continue;} //atanu: is it the distance of the hit from the interaction point?
+        if(isbkg && DaughterIds.size()>0 && dis2int>600) { continue;} //atanu: is it the distance of the hit from the interaction point?
+
+        TGeoNode* node = geo->FindNode(x,y,z);
+        TString slabstr = node->GetName();
+        TString modstr=geo->GetMother()->GetName();
+        //    std::cout<<"modstr:"<<modstr<<std::endl;
+        int id, modID, slabID, planeID, cellID;
+        double d1,d2;
+        //std::cout<<"slabstr:"<<slabstr<<std::endl;
+        //if(slabstr.Contains("volTRAPEActiveSlab") == true)
+        if(slabstr.Contains("volTRAPE") == true || slabstr.Contains("EXTMUID") == true)
+        {
+            TObjArray* obj1 = slabstr.Tokenize("_");  //volEXTMUIDActiveSlab_125_PV_0
+            TObjArray* obj2 = modstr.Tokenize("_");  //EXTMUID_lv_PV_19
+
+            modID  = ((TObjString*) obj2->At(3))->GetString().Atoi();
+            slabID = ((TObjString*) obj1->At(1))->GetString().Atoi();
+        
+     
+            delete obj1;
+            delete obj2;
+
+            //planeID = slabID/40;
+            if (slabID == 0 && slabstr.Contains("ActiveSlab") == true) planeID = 0;
+            if (slabID == 0 && slabstr.Contains("PassiveSlab") == true) planeID = 1;
+            if (slabID == 1 && slabstr.Contains("ActiveSlab") == true) planeID = 2;
+            
+            if (slabID > 2) planeID = 2;
+            double Pmaster[3]={x,y,z};
+            double Plocal[3];
+            geo->GetCurrentNavigator()->MasterToLocal(Pmaster,Plocal);
+            TGeoTrd2* trd = (TGeoTrd2*) node->GetVolume()->GetShape();
+
+            double dx1 = trd->GetDx1();  // shorter one along circumferential
+            double dx2 = trd->GetDx2();  // longer one along circumferential
+            double dz  = trd->GetDz();   // half thickness , along 
+            double dy1 = trd->GetDy1();  // along axial/fiber , same as dy2
+            d1 = dy1 + Plocal[1];
+            d2 = dy1 - Plocal[1];
+
+            double dx = (dx2 - dx1) / dz * Plocal[2];
+            double dis= Plocal[0]>0? (dx1+dx2)/2. + Plocal[0] - dx/2.: (dx1+dx2)/2. + Plocal[0] + dx/2.;
+            double cellw = (dx1+dx2) / 12.;
+            cellID = dis / cellw;  // cell ID increase counterclockwise, from 0 to 11, then 0 to 11 
+            //std::cout << "slabstr: " << slabstr << " 1st _ :" << " =  SlabID: " << slabID << ", planeID: " << planeID << ", cellID: " << cellID << ", modstr: " << modstr << " 3rd _ = modID: " << modID << "\n";
+	//		std::cout << "------------------------->>>"<< __LINE__ << "\n";
+            //	if(DaughterIds.size()>0)  std::cout<<"trackid:"<<trackid<<"  modID:"<<modID<<" slabID:"<<slabID<<" planeID:"<<planeID<<" cellID:"<<cellID<<std::endl;
+        }
+    /* atanu: commenting out because there's no end cap!
+	else if(slabstr.Contains("vol_endTRAPEActiveSlab") == true)
+    {
+		///// absolutely no endcap hits
+		return false;
+
+		TObjArray* obja = slabstr.Tokenize("_");
+		modID  = x>0?30:40;
+		slabID = ((TObjString*) obja->At(1))->GetString().Atoi();
+
+		delete obja;
+
+		planeID = slabID/112; //as I have to divide 563 layers into 5 groups..last layer gets 115 slabs 
+		//planeID = slabID/40;
+		if (planeID > 4) planeID = 4;
+		double Pmaster[3]={x,y,z};
+		double Plocal[3];
+		//      std::cout<<"x:"<<x<<" y:"<<y<<" z:"<<z<<std::endl;
+		geo->GetCurrentNavigator()->MasterToLocal(Pmaster,Plocal);
+
+		TGeoTube* tub = (TGeoTube*) node->GetVolume()->GetShape();
+		double rmax = tub->GetRmax();
+		cellID = int((Plocal[0]/rmax + 1.) * 45);	 
+		// 0: larger--> smaller Z 
+		// 1: smaller cellId -> smaller Z
+
+	    }*/
+	else { 
+			
+			//std::cout << "------------------------->>>"<< __LINE__ << "\n";
+			continue;
+		}
+	//    std::cout<<" "<<id;
+	id = cellID + 100 * planeID + 1000 * modID;
+
+
+
+	hit_count_test[planeID]++;
+    //std::cout << "SlabID: " << slabID << ", count[" << planeID << "]: " << hit_count_test[planeID] << ", cellID: " << cellID << ", modID: " << modID << ", id: " << id << ", d1: " << d1 << ", d2: " << d2 << "\n";
+	
+
+	double en1 = de * Attenuation(d1, planeID);
+	double en2 = de * Attenuation(d2, planeID);
+
+	double ave_pe1 = E2PE(en1);
+	double ave_pe2 = E2PE(en2);
+
+	int pe1 = ran->Poisson(ave_pe1);
+	int pe2 = ran->Poisson(ave_pe2);
+	//int npe=pe1+pe2;
+    double npe = npe1MeV*h.EnergyDeposit;
+
+
+	double t=(h.Start.T()+h.Stop.T())*0.5; //  + ran->Gaus(0,0.26);
+
+	if(Id_npe_earliestT.find(id)!=Id_npe_earliestT.end()) {
+	    Id_npe_earliestT[id].first+= npe;
+	    if(t<Id_npe_earliestT[id].second) Id_npe_earliestT[id].second=t;
+	}
+	else {
+	    Id_npe_earliestT[id].first = npe;
+	    Id_npe_earliestT[id].second=t;
+	}
+    
+	/*
+	  if(Id_Evis.find(id)==Id_Evis.end())
+	  Id_Evis[id]= h.EnergyDeposit;
+	  else
+	  Id_Evis[id]+= h.EnergyDeposit;
+	*/
+    }
+
+    extmuidTdiff=Tend-Tstart;
+    for(auto it = Id_npe_earliestT.begin(); it != Id_npe_earliestT.end(); ) {
+	//if(it->second.first <2.5)
+	if(it->second.first <0)
+	    it = Id_npe_earliestT.erase(it);
+	else
+	    ++it;
+    }
+  
+
+    if(Id_npe_earliestT.size()==0) return false;
+    else return true;
+
+}
+
+
+
+std::map <int, float> getInfo(std::map<int, std::pair<int, double> > Id_npe_earliestT, double &earliestCellE, double &earliestT, double *layer_extmuid_Evis, double *layer_extmuid_NcellEXTMUID, double *layer_span, double *layer_dis, double &cellEXTMUIDEmax, double &cellEXTMUIDEmin, double &cellEXTMUIDEavg, double &cellEXTMUIDEr, double &nCelltot){
+    
+    //std::cout << "getInfo: ";
+    std::vector<std::set<int> >   layer_modCellids;
+    double layer_Etimedis[3];
+    double layer_Etimedis2[3];
+    double layer_disavg[3];
+    double layer_earliestT[3];
+    std::set<int> emptyset;
+
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        layer_extmuid_Evis[i]=0;
+        layer_extmuid_NcellEXTMUID[i]=0;
+        layer_span[i]=0;
+        layer_modCellids.push_back(emptyset);
+        layer_Etimedis[i]=0;
+        layer_Etimedis2[i]=0; 
+    }
+    
+    cellEXTMUIDEmax=-9999;
+    cellEXTMUIDEmin=9999;
+    nCelltot=0;
+    cellEXTMUIDEavg=0;  
+  
+    earliestT=99999999;
+
+    for(auto &cellEXTMUID:Id_npe_earliestT){
+        int id=cellEXTMUID.first;
+        int planeId=(id%1000)/100;
+        int modId=id/1000;
+        int cellEXTMUIDId=id%100;
+
+        int modCellId=modId*12+cellEXTMUIDId;
+        
+        double cellEXTMUIDcalE = 0; 
+        //if cellEXTMUID.second.first/npe1MeV;
+        //std::cout << "EnergyDeposit: " << cellEXTMUIDcalE << "\n";
+       
+        for (const TG4HitSegment& h: event->SegmentDetectors["EXTMUID"])
+        {
+            double de=h.EnergyDeposit;
+            cellEXTMUIDcalE=de*npe1MeV;
+            //std::cout << "EnergyDeposit: " << cellEXTMUIDcalE << "\n";
+        }
+
+
+        //    myEXTMUIDgeo->AddHit(modId, planeId,cellEXTMUIDId);
+        if(cellEXTMUID.second.second<earliestT) { earliestT=cellEXTMUID.second.second; earliestCellE=cellEXTMUIDcalE;}
+
+        layer_extmuid_Evis[planeId]+=cellEXTMUIDcalE; //cellEXTMUID.second;
+        cellEXTMUIDEavg+=cellEXTMUIDcalE; // cellEXTMUID.second;
+        if(cellEXTMUIDcalE>cellEXTMUIDEmax) cellEXTMUIDEmax=cellEXTMUIDcalE; //cellEXTMUID.second;
+        if(cellEXTMUIDcalE<cellEXTMUIDEmin) cellEXTMUIDEmin=cellEXTMUIDcalE; //cellEXTMUID.second;
+        layer_extmuid_NcellEXTMUID[planeId]++;    
+        nCelltot++;
+        layer_modCellids[planeId].insert(modCellId);
+        layer_Etimedis[planeId]+=modCellId*cellEXTMUIDcalE; //cellEXTMUID.second;
+    }
+  
+    cellEXTMUIDEavg/=(nCelltot*1.0);
+    cellEXTMUIDEr=(cellEXTMUIDEmax-cellEXTMUIDEmin)/(cellEXTMUIDEmax+cellEXTMUIDEmin);
+
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        //    std::cout<<"###i: "<<i;
+        //    for(auto p:layer_modCellids[i])
+        //      std::cout<<" "<<p;
+        //    std::cout<<std::endl;
+        if(layer_modCellids[i].size()!=0){
+            int a=*layer_modCellids[i].begin();
+            int b=*layer_modCellids[i].rbegin();
+            layer_span[i]=(a>b?(a-b):(b-a));
+            layer_span[i]++;   
+        }
+        else
+            layer_span[i]=0;
+    }
+    //for(int i=0;i<5;i++){    
+    for(int i=0;i<3;i++){    
+        layer_span[i]*=widths_extmuid[i];
+    }
+    ///////
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        layer_disavg[i]=layer_Etimedis[i]/layer_extmuid_Evis[i];
+    }
+    for(auto &cellEXTMUID: Id_npe_earliestT){
+        int id=cellEXTMUID.first;
+        int planeId=(id%1000)/100;
+        int modId=id/1000;
+        int cellEXTMUIDId=id%100;
+        int modCellId=modId*12+cellEXTMUIDId;
+        //    if(cellEXTMUID.second<0.1) continue;
+            //std::cout<<"planeId:"<<planeId<<" modCellId:"<<modCellId<<" cellEXTMUIDe:"<<cellEXTMUID.second<<std::endl;
+        //double cellEXTMUIDcalE=cellEXTMUID.second.first/npe1MeV;
+    }
+
+
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        layer_dis[i]=layer_Etimedis2[i]/layer_extmuid_Evis[i];
+        layer_dis[i]*=widths_extmuid[i];
+        //    std::cout<<"i:"<<i<<" dis:"<<layer_dis[i]<<std::endl;
+    }
+    int latestEXTMUIDLayer=-1;
+    std::map <int, float> layer_energy_extmuid;
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        if(layer_extmuid_Evis[i]>0) { 
+            latestEXTMUIDLayer=i; 
+            //layer_energy_extmuid[latestEXTMUIDLayer] = layer_extmuid_Evis[i];
+        }
+    }
+
+    //std::cout << "latestEXTMUIDLayer: " << latestEXTMUIDLayer << "\n";
+    //return latestEXTMUIDLayer;
+    layer_energy_extmuid[latestEXTMUIDLayer] = layer_extmuid_Evis[latestEXTMUIDLayer];
+    return layer_energy_extmuid;
+}
+
+
+
+
+
+
+void getMuSigma(double *Id_Evis, double &mu, double &sigma){
+    mu=0;
+    sigma=0;
+    double n=0.;
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        if(Id_Evis[i]==0) continue;
+        mu+=Id_Evis[i];
+        n+=1.0;
+    }
+    mu/=n;
+    //for(int i=0;i<5;i++){
+    for(int i=0;i<3;i++){
+        if(Id_Evis[i]==0) continue;
+        sigma+=pow(Id_Evis[i]-mu,2);
+    }
+    sigma=sqrt(sigma/n);
+    //  mu=(Id_Evis[0]+Id_Evis[1]+Id_Evis[3]+Id_Evis[3]+Id_Evis[4])/5.;
+    //  sigma=sqrt((pow(Id_Evis[0]-mu,2)+pow(Id_Evis[1]-mu,2)+pow(Id_Evis[3]-mu,2)+pow(Id_Evis[3]-mu,2)+pow(Id_Evis[4]-mu,2))/5.0);
+  
+}
+void getRMaxMin(double *Id_Evis, double &r, double &max, double &min){
+    max=-999;
+    min=999999;
+    //for(int i=1;i<5;i++){         //why start from 1 and not 0?
+    for(int i=1;i<3;i++){   
+        if(Id_Evis[i]==0) continue;  //<--- this is important
+    
+        if(Id_Evis[i]>max) max=Id_Evis[i];
+        if(Id_Evis[i]<min) min=Id_Evis[i];
+    }
+    r=(max-min)/(max+min);  
+}
+
+
+
+void organizeHits(){
+    sttMap.clear();
+    extmuidMap.clear();
+    int pretrackid;
+    int posttrackid;
+    int nhit;
+    int istart;
+
+    if(event->SegmentDetectors["Straw"].size()>0){
+		pretrackid=event->SegmentDetectors["Straw"].begin()->Contrib[0];
+		nhit=1;
+		istart=0;
+		posttrackid=pretrackid;
+		for(unsigned int i=1; i<event->SegmentDetectors["Straw"].size(); i++){
+			posttrackid=event->SegmentDetectors["Straw"].at(i).Contrib[0];
+			//      std::cout<<"posttrackid:"<<posttrackid<<" nhit:"<<nhit<<std::endl;
+			if(posttrackid==pretrackid) { nhit++;continue;}
+			if(sttMap.find(pretrackid) ==sttMap.end())
+			sttMap[pretrackid]= std::make_pair(istart,nhit);
+			if(sttMap.find(posttrackid) ==sttMap.end()){
+				nhit=1;
+				istart=i;
+			}
+			pretrackid=posttrackid;
+		}
+		if(sttMap.find(posttrackid) ==sttMap.end())
+			sttMap[posttrackid]= std::make_pair(istart,nhit);
+    }
+
+
+    for(auto it = sttMap.begin(); it != sttMap.end(); ) {
+	if(it->second.second <4)
+	    it = sttMap.erase(it);
+	else
+	    ++it;
+    }
+
+    if(event->SegmentDetectors["EXTMUID"].size()>0){
+        pretrackid=event->SegmentDetectors["EXTMUID"].begin()->Contrib[0];
+			nhit=1;
+			istart=0;
+        	posttrackid=pretrackid;
+			for(unsigned long i=1; i<event->SegmentDetectors["EXTMUID"].size(); i++){
+				posttrackid=event->SegmentDetectors["EXTMUID"].at(i).Contrib[0];
+				//      std::cout<<"posttrackid:"<<posttrackid<<" nhit:"<<nhit<<std::endl;
+				if(posttrackid==pretrackid) { 
+					nhit++;
+					continue;
+				}
+				if(extmuidMap.find(pretrackid) ==extmuidMap.end())
+				extmuidMap[pretrackid]= std::make_pair(istart,nhit);
+				if(extmuidMap.find(posttrackid) ==extmuidMap.end()){
+					nhit=1;
+					istart=i;
+				}
+				pretrackid=posttrackid;
+
+			}
+	if(extmuidMap.find(posttrackid) ==extmuidMap.end())
+	    extmuidMap[posttrackid]= std::make_pair(istart,nhit);
+    }
+
+}
+
+
+
+
+void getVertCoord(const std::vector<double>& z_v, std::vector<double>& y_v,  int sign, double  zc, double yc, double r)
+{
+    y_v.clear();
+
+    int forward = z_v[1] - z_v[0] > 0 ? 1 : -1;
+
+    double dy_sq, dy;
+
+    dy_sq = r*r - (z_v[0] - zc) * (z_v[0] - zc);
+    //  std::cout<<"dy_sq:"<<dy_sq<<std::endl;
+    if (dy_sq < 0.) dy_sq = 0.;
+
+    dy = TMath::Sqrt(dy_sq);
+    y_v.push_back( yc - forward*sign * dy);
+
+    for (unsigned int i = 1; i < z_v.size(); i++) {
+	//    if ((z_v[i] - z_v[i - 1]) * forward > 0.) {
+	forward = z_v[i] - z_v[i-1] > 0 ? 1 : -1;
+	dy_sq =r*r - (z_v[i] - zc) * (z_v[i] - zc);
+	//      std::cout<<"dy_sq:"<<dy_sq<<std::endl;
+	if (dy_sq < 0.) dy_sq = 0.;
+
+	dy = TMath::Sqrt(dy_sq);
+
+	y_v.push_back( yc - forward * sign * dy);
+	//    } else {
+	//      break;
+	//    }
+    }
+}
+
+bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &r, double &zc, double &yc, double &b, double &err, double chi2_cr[]){
+    //  massrecoSucceed=true;
+    //  std::cout<<"trackid----------------------------:"<<trackid<<"            ientry:"<<ientry<<std::endl;
+    double sandr=3300 + 190;
+    double sttr=2000;
+    std::vector<double> y_h;
+    std::vector<double> z_h;
+    std::vector<double> x_v;
+    std::vector<double> y_v;
+    std::vector<double> z_v;
+    std::vector<double> rho;
+    std::vector<double> t_h;
+    std::vector<double> t_v;
+    unsigned int ihit=sttMap[trackid].first;
+    int nhit=sttMap[trackid].second;
+    TLorentzVector prePos, postPos;
+  
+    //  double dy,dz,dx;
+    TG4HitSegment  h= event->SegmentDetectors["Straw"].at(ihit);
+    unsigned int i=(ihit+1);
+    if( (event->SegmentDetectors["Straw"].at(ihit+1).Start.T()<h.Start.T() || event->SegmentDetectors["Straw"].at(ihit+1).Stop.T()<h.Stop.T() ) && h.Contrib.size()>1)
+	{ h= event->SegmentDetectors["Straw"].at(ihit+1); i=(ihit+2);}
+    TLorentzVector mid= (h.Start+h.Stop)*0.5;
+    prePos=mid;
+    TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
+    bool firstHor;
+    if(name.Contains("horizontal")){
+	y_h.push_back(mid.Y());
+	z_h.push_back(mid.Z());
+	t_h.push_back(mid.T());
+	firstHor=true;
+    }
+    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	x_v.push_back(mid.X());
+	z_v.push_back(mid.Z());
+	t_v.push_back(mid.T());
+	firstHor=false;
+    }
+    else {
+	std::cout<<"----------> its not horizontal or ver, but name:"<<name<<std::endl;
+    }
+
+    for( ;i<(ihit+nhit);i++){
+	h=event->SegmentDetectors["Straw"].at(i);
+	postPos= (h.Start+h.Stop)*0.5;
+	if(postPos.T()< prePos.T()) { // the time reversed hits are usually bad hits, break it
+	    if((i-ihit)*1.0<0.5*nhit && nhit>15) std::cout<<"thistrack has >15hits but break befor half,mayneed lookinto!!!nhit: "<<nhit<<" i-ihit:"<<i-ihit<<" trackid:"<<trackid<<std::endl;
+	    break;}
+	if(h.EnergyDeposit<250E-6) continue;
+
+	name=geo->FindNode(postPos.X(),postPos.Y(),postPos.Z())->GetName();
+	if(name.Contains("horizontal")){
+	    y_h.push_back(postPos.Y());
+	    z_h.push_back(postPos.Z());
+	    t_h.push_back(postPos.T());
+	}  
+	else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	    x_v.push_back(postPos.X());
+	    z_v.push_back(postPos.Z());
+	    t_v.push_back(postPos.T());
+	}
+	else {
+	    std::cout<<"----------> its not horizontal or ver, but name:"<<name<<std::endl;
+	}
+    
+	prePos=postPos;
+    }// for
+
+    int n_h = z_h.size();
+    int n_v = z_v.size();
+    if(n_h <= 4) {
+	return false;
+    }
+    int pdg=event->Trajectories[trackid].PDGCode;
+    double charge=dbpdg->GetParticle(pdg)->Charge()/3.;
+
+    int sign= charge>0?1:-1;
+    int clockwise=charge>0?-1:1;
+    //  double err,chi2_cr;
+    //  std::cout<<"test0000"<<std::endl;
+    fitCircle(n_h, z_h, y_h, zc, yc, r, err, chi2_cr);
+
+    if(z_v.size()<3) return false;
+  
+    getVertCoord(z_v, y_v, sign, zc, yc, r);
+    if (y_v.size() <= 2) {
+	return false;
+    }
+
+  
+    double dphi;
+
+    double cos = clockwise * (y_v[0] - yc) / r;
+    double sin = -clockwise * (z_v[0] - zc) / r;
+
+  
+    for (unsigned int k = 0; k < y_v.size(); k++) {
+        dphi= clockwise*(TMath::ATan2(y_v[0]-yc,z_v[0]-zc) - TMath::ATan2(y_v[k]-yc,z_v[k]-zc));
+        if(dphi<0) dphi+=TMath::Pi()*2;
+        rho.push_back(dphi*r);
+    }
+    double cov[2][2];
+    double chi2_ln;
+    double a; 
+    int linearres=fitLinear(y_v.size(), rho, x_v, a, b, cov, chi2_ln);
+    if(linearres!=0) return false;
+    //  std::cout<<"a:"<<a<<" x_v[0]:"<<x_v[0]<<std::endl;
+
+    double Pyz= r* 0.299792458 * B;
+    double Px= Pyz * b;
+    double z0,y0;
+    if(event->Trajectories[trackid].ParentId==-1){
+	z0=event->Primaries[0].Position.Z();
+	y0=event->Primaries[0].Position.Y();
+    }
+    else {
+	if(firstHor){
+	    z0=z_h[0];
+	    y0=y_h[0];
+	}
+	else{
+	    z0=z_v[0];
+	    y0=y_v[0];
+	}
+    }
+    initPos.SetXYZ(x_v[0], y_v[0], z_v[0]);
+
+    double r0z = z0 - zc;
+    double r0y = y0 - yc;
+    double ang_yz = TMath::ATan2(r0z, -r0y);
+    double Py = sign* Pyz * TMath::Sin(ang_yz);
+    double Pz =  sign*Pyz * TMath::Cos(ang_yz);
+
+    double P=sqrt(Pyz*Pyz+Px*Px);
+    p3.SetXYZ(Px,Py,Pz);
+    return true;
+    //  std::cout<<"b:"<<b<<" beta:"<<beta<<" mreco:"<<mreco<<" dis:"<<dis<<" dt:"<<dt<<std::endl;
+}
+
+
+
+bool sttreconstructable2(int trackid, TVector3 &p3){
+    std::vector<double> y_h;
+    std::vector<double> z_h;
+    std::vector<double> x_v;
+    std::vector<double> y_v;
+    std::vector<double> z_v;
+    std::vector<double> rho;
+    std::vector<double> t_h;
+    std::vector<double> t_v;
+    unsigned int ihit=sttMap[trackid].first;
+    int nhit=sttMap[trackid].second;
+    TLorentzVector prePos, postPos;
+  
+    //  double dy,dz,dx;
+    TG4HitSegment  h= event->SegmentDetectors["Straw"].at(ihit);
+    unsigned int i=(ihit+1);
+    if( (event->SegmentDetectors["Straw"].at(ihit+1).Start.T()<h.Start.T() || event->SegmentDetectors["Straw"].at(ihit+1).Stop.T()<h.Stop.T() ) && h.Contrib.size()>1)
+	{ h= event->SegmentDetectors["Straw"].at(ihit+1); i=(ihit+2);}
+    //  const TG4HitSegment& hseg = ev->SegmentDetectors["Straw"].at(j);
+    TLorentzVector mid= (h.Start+h.Stop)*0.5;
+    prePos=mid;
+    TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
+    bool firstHor;
+    if(name.Contains("horizontal")){
+	y_h.push_back(mid.Y());
+	z_h.push_back(mid.Z());
+	t_h.push_back(mid.T());
+	firstHor=true;
+    }
+    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	x_v.push_back(mid.X());
+	z_v.push_back(mid.Z());
+	t_v.push_back(mid.T());
+	firstHor=false;
+    }
+    else {
+	std::cout<<"----------> its not horizontal or ver, but name:"<<name<<std::endl;
+    }
+
+    for( ;i<(ihit+nhit);i++){
+	h=event->SegmentDetectors["Straw"].at(i);
+    
+	if(postPos.T()< prePos.T()) { // the time reversed hits are usually bad hits, break it
+	    //      if((i-ihit)*1.0<=0.5*nhit) std::cout<<"trackid:"<<trackid<<" time reverse, cut! ihit:"<<ihit<<" nhit+ihit:"<<nhit+ihit<<" i:"<<i<<std::endl;
+	    if((i-ihit)*1.0<0.5*nhit && nhit>15) std::cout<<"thistrack has >15hits but break befor half,mayneed lookinto!!!nhit: "<<nhit<<" i-ihit:"<<i-ihit<<" trackid:"<<trackid<<std::endl;
+	    break;}
+	if(h.EnergyDeposit<250E-6) continue;
+	postPos= (h.Start+h.Stop)*0.5;
+	name=geo->FindNode(postPos.X(),postPos.Y(),postPos.Z())->GetName();
+	if(name.Contains("horizontal")){
+	    y_h.push_back(postPos.Y());
+	    z_h.push_back(postPos.Z());
+	}  
+	else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	    x_v.push_back(postPos.X());
+	    z_v.push_back(postPos.Z());
+	}
+	else {
+
+	}
+    
+	prePos=postPos;
+    }// for
+
+    int n_h = z_h.size();
+    int n_v = z_v.size();
+    if(n_h <= 4) {
+	return false;
+    }
+    int pdg=event->Trajectories[trackid].PDGCode;
+    int sign= pdg>0?1:-1;
+    int clockwise=pdg>0?-1:1;
+    double zc,yc,r,err,chi2_cr[6];
+    fitCircle(n_h, z_h, y_h, zc, yc, r, err, chi2_cr);
+    getVertCoord(z_v, y_v, sign, zc, yc, r);
+    if (y_v.size() <= 2) {
+	return false;
+    }
+
+    double dphi= clockwise*(TMath::ATan2(y_h[0]-yc,z_h[0]-zc) - TMath::ATan2(y_h[n_h-1]-yc,z_h[n_h-1]-zc));
+    if(dphi<0) dphi+=TMath::Pi()*2;
+    double disyz=dphi*r;
+  
+
+    double cos = clockwise * (y_v[0] - yc) / r;
+    double sin = -clockwise * (z_v[0] - zc) / r;
+
+
+    for (unsigned int k = 0; k < y_v.size(); k++) {
+	rho.push_back(z_v[k] * cos + y_v[k] * sin);
+    }
+  
+    double cov[2][2];
+    double chi2_ln;
+    double a,b;
+    int linearres=fitLinear(y_v.size(), rho, x_v, a, b, cov, chi2_ln);
+    if(linearres!=0) return false;
+  
+    double Pyz= r* 0.299792458 * B;
+    double Px= Pyz * b;
+    double z0,y0;
+    if(event->Trajectories[trackid].ParentId==-1){
+	z0=event->Primaries[0].Position.Z();
+	y0=event->Primaries[0].Position.Y();
+    }
+  
+    double disx=disyz*b;
+  
+    double dis=sqrt(disx*disx+disyz*disyz);
+  
+    double r0z = z0 - zc;
+    double r0y = y0 - yc;
+    double ang_yz = TMath::ATan2(r0z, -r0y);
+    double Py = sign* Pyz * TMath::Sin(ang_yz);
+    double Pz =  sign*Pyz * TMath::Cos(ang_yz);
+
+    double P=sqrt(Pyz*Pyz+Px*Px);
+
+    p3.SetXYZ(Px,Py,Pz);
+
+}
+
+bool sttreconstructable(int trackid, TVector3 &p3){
+  
+    int nYhit=0;
+    int nXhit=0;
+    TLorentzVector prePos, postPos;
+    //    double dy,dz,dx;
+
+    unsigned int ihit=sttMap[trackid].first;
+    int nhit=sttMap[trackid].second;
+
+    double Lyz=0;
+    double L=0;
+    double Lx=0;
+    double dy,dz,dx;
+    TG4HitSegment  h= event->SegmentDetectors["Straw"].at(ihit);
+    unsigned int i=(ihit+1);
+    if( (event->SegmentDetectors["Straw"].at(ihit+1).Start.T()<h.Start.T() || event->SegmentDetectors["Straw"].at(ihit+1).Stop.T()<h.Stop.T() ) && h.Contrib.size()>1)
+	{ h= event->SegmentDetectors["Straw"].at(ihit+1); i=(ihit+2);}
+    //  const TG4HitSegment& hseg = ev->SegmentDetectors["Straw"].at(j);
+    TLorentzVector mid= (h.Start+h.Stop)*0.5;
+    prePos=mid;
+    TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
+    if(name.Contains("horizontal")) nYhit++;
+    else nXhit++;
+    for( ;i<(ihit+nhit);i++){
+	h=event->SegmentDetectors["Straw"].at(i);
+	postPos= (h.Start+h.Stop)*0.5;
+	if(postPos.T()< prePos.T()) { // the time reversed hits are usually bad hits, break it
+	    //      if((i-ihit)*1.0<=0.5*nhit) std::cout<<"trackid:"<<trackid<<" time reverse, cut! ihit:"<<ihit<<" nhit+ihit:"<<nhit+ihit<<" i:"<<i<<std::endl;
+	    if((i-ihit)*1.0<0.5*nhit && nhit>15) std::cout<<"thistrack has >15hits but break befor half,mayneed lookinto!!!nhit: "<<nhit<<" i-ihit:"<<i-ihit<<" trackid:"<<trackid<<std::endl;
+	    break;}
+	if(h.EnergyDeposit<250E-6) continue;
+	postPos= (h.Start+h.Stop)*0.5;
+	dx= postPos.X()-prePos.X();
+	dy= postPos.Y()-prePos.Y();
+	dz= postPos.Z()-prePos.Z();
+	name=geo->FindNode(postPos.X(),postPos.Y(),postPos.Z())->GetName();
+	if(name.Contains("horizontal")) nYhit++;
+	else nXhit++;
+	Lyz+= sqrt(dy*dy+dz*dz);
+	L+= sqrt(dx*dx+dy*dy+dz*dz);
+	prePos=postPos;
+    }
+
+    if(nYhit<4) return false;
+  
+    TVector3 initP=event->Trajectories[trackid].InitialMomentum.Vect();
+    double Pt=sqrt(initP.Y()*initP.Y()+initP.Z()*initP.Z());
+    double Px=initP.X();
+    double P=initP.Mag();
+    double dipAng=atan(Px/Pt);
+    double thetaYZ=TMath::ATan2(initP.Y(),initP.Z()); /// <------ 
+    //  std::cout<<"Lyz:"<<Lyz<<" P:"<<P<<std::endl;
+
+
+    Lx=sqrt(L*L-Lyz*Lyz);
+    L/=1000;
+    Lyz/=1000.; //mm-> m
+    Lx/=1000.; //mm-> m
+    Pt/=1000.;  // Mev-->GeV
+    Px/=1000.;
+    P/=1000.;
+    //  double dPt2Pt=sqrt(pow(sigmas*Pt/0.3/B/Lyz/Lyz*sqrt(720./(nYhit+4)),2)+pow(0.045/B/sqrt(Lyz*x0),2));
+    double dPt2Pt=sqrt(pow(sigmas*Pt/0.3/B/L/L*sqrt(720./(nYhit+4)),2)+pow(0.045/B/sqrt(L*x0),2));
+    double Pt_smear=Pt*ran->Gaus(1, dPt2Pt);
+    while(Pt_smear<=0){
+	Pt_smear=Pt*ran->Gaus(1, dPt2Pt);
+    }
+    double sigma_dipAng=13.6E-3/P*sqrt(L/x0)*(1+0.038*log(L/x0)); // from pdg
+    //  double sigma_dipAng2=13.6E-3/P*sqrt(Lx/x0)*(1+0.038*log(Lx/x0)); // from pdg
+    //  double sigma_dipAng3=13.6E-3/P*sqrt(Lyz/x0)*(1+0.038*log(Lyz/x0)); // from pdg
+    double dipAng_smear=dipAng + ran->Gaus(0,sigma_dipAng);
+    //  double dipAng_smear2=dipAng + ran->Gaus(0,sigma_dipAng2);
+    //  double dipAng_smear3=dipAng + ran->Gaus(0,sigma_dipAng3);
+    double Px_smear=Pt*tan(dipAng_smear);
+    double sigma_thetaYZ=13.6E-3/P*sqrt(Lyz/x0)*(1+0.038*log(Lyz/x0)); 
+    double thetaYZ_smear=thetaYZ + ran->Gaus(0,sigma_thetaYZ);
+    double Py_smear=Pt_smear*sin(thetaYZ_smear);
+    double Pz_smear=Pt_smear*cos(thetaYZ_smear);
+    double P_smear=sqrt(Pt_smear*Pt_smear+Px_smear*Px_smear);
+  
+    //  std::cout<<"true px:"<<initP.X()<<"true py:"<<initP.Y()<<"true pz:"<<initP.Z()<<std::endl;
+    //  std::cout<<"dipAng:"<<dipAng<<" sigma_dipAng:"<<sigma_dipAng<<"  Pt:"<<Pt<<"  dipAng_smear:"<<dipAng_smear<<" Px_smear:"<<Px_smear<<"   Py_smear:"<<Py_smear<<" Pz_smear:"<<Pz_smear<<std::endl;
+    p3.SetXYZ(Px_smear*1000,Py_smear*1000,Pz_smear*1000);
+    return true;
+
+}
+
+int getDaughters(int trackid, std::vector<int> &daughterIds, std::vector<std::string> &daughterNames){
+    daughterIds.clear();
+    daughterNames.clear();
+    int nDaughter=0;
+    std::vector<int> ddids;
+    std::vector<std::string> ddnames;
+    for(int i=(trackid+1);i<event->Trajectories.size();i++){
+	if(event->Trajectories[i].ParentId==trackid){
+	    nDaughter++;
+	    daughterNames.push_back(event->Trajectories[i].Name);
+	    daughterIds.push_back(event->Trajectories[i].TrackId);
+	    nDaughter+=getDaughters(event->Trajectories[i].TrackId, ddids, ddnames);
+	    daughterIds.insert(daughterIds.end(), ddids.begin(), ddids.end());
+	    daughterNames.insert( daughterNames.end(), ddnames.begin(), ddnames.end());
+	}
+    }
+    return nDaughter;
+}
+
+bool Interact_InEXTMUID(bool &endInSTT, bool &endInYoke, int trackid, double &x, double &y, double &z, std::vector<int> &daughterIds, std::vector<std::string> &daughterNames){
+  
+    endInSTT=false;
+    endInYoke=false;
+    daughterIds.clear();
+
+    if(inSTT(event->Trajectories[trackid].Points.rbegin()->Position.Vect())) { endInSTT=true; return false;}
+    if(inYoke(event->Trajectories[trackid].Points.rbegin()->Position.Vect())) { endInYoke=true; return false;}
+    if(!inEXTMUIDbarrel(event->Trajectories[trackid].Points.rbegin()->Position.Vect())) { return false;}
+  
+    int ndaughter=getDaughters(trackid, daughterIds, daughterNames);
+
+    if(ndaughter==0) return false;
+    //  std::cout<<std::endl;
+      //std::cout<<"trackid:"<<trackid<<"   ndaughter:"<<ndaughter<<std::endl;
+  
+    x=event->Trajectories[trackid].Points.rbegin()->Position.X();
+    y=event->Trajectories[trackid].Points.rbegin()->Position.Y();
+    z=event->Trajectories[trackid].Points.rbegin()->Position.Z();
+
+    return true;
+  
+}
+
+
+
+bool getPosP_enteringEXTMUID(int trackid, double &dis, double &t1, double &t2, double &p1, double &p2, double &radius){
+    //  std::cout<<"-------------------------- start to draw markers -----------------------"<<std::endl;
+    //double sandr=240;  //what is this? We have solenoid inner wall at 244 cm, so is 240 the max boundary of ECAl.. although it's 23 cm thick, that is ends at 223 cm?
+    double sandr = 330 + 0.05 + 2 + 15 + 2; 
+    //double sttr=200;    //let's replace this by EXTMUID start, that is 330
+    double sttr=330+0.05;
+
+    dis=0;
+    if(!inSTT(event->Trajectories[trackid].Points[0].Position.Vect())){
+        std::cout<<"it\'s start point is not in STT, wrong, check"<<std::endl; return false;
+    }
+  
+    if(event->Primaries.begin()->GetPosition().Vect()!=event->Trajectories[trackid].Points[0].Position.Vect()){
+        std::cout<<"the first point is not vtx, check"<<std::endl; return false;
+    }
+
+    p1=event->Trajectories[trackid].Points[0].Momentum.Mag();
+    t1=event->Trajectories[trackid].Points[0].Position.T();
+    int imark=4;
+
+    std::vector<double> ys;
+    std::vector<double> zs;
+    ys.push_back(event->Trajectories[trackid].Points[0].Position.Y()/10);
+    zs.push_back(event->Trajectories[trackid].Points[0].Position.Z()/10);
+
+    if(debug>=3) { 
+        std::cout<<"first point: x: "<<event->Trajectories[trackid].Points[0].Position.X()<<" Y:"<<event->Trajectories[trackid].Points[0].Position.Y()<<" z:"<<event->Trajectories[trackid].Points[0].Position.Z()<<std::endl;
+        event->Trajectories[trackid].Points[0].Momentum.Print();
+    }
+
+    std::string savename="marks_i"+std::to_string(ientry)+"_trkid"+std::to_string(trackid)+".pdf";
+    for(int i=1;i<event->Trajectories[trackid].Points.size();i++){
+        ys.push_back(event->Trajectories[trackid].Points[i].Position.Y()/10);
+        zs.push_back(event->Trajectories[trackid].Points[i].Position.Z()/10);    
+
+        if(debug>=3) {
+            std::cout<<"point:"<<i<<"  x: "<<event->Trajectories[trackid].Points[i].Position.X()<<" Y:"<<event->Trajectories[trackid].Points[i].Position.Y()<<" z:"<<event->Trajectories[trackid].Points[i].Position.Z()<<std::endl;
+            event->Trajectories[trackid].Points[i].Momentum.Print();
+        }
+        double dx=(event->Trajectories[trackid].Points[i].Position.Vect()-event->Trajectories[trackid].Points[i-1].Position.Vect()).Mag();
+        dis+=dx;
+        if(!inSTT(event->Trajectories[trackid].Points[i].Position.Vect())) { 
+            double yc,zc, r, err, chi2[6];
+            int rc=fitCircle( ys.size(), zs, ys, zc, yc, r, err, chi2);
+            t2=event->Trajectories[trackid].Points[i].Position.T(); 
+            p2=event->Trajectories[trackid].Points[i].Momentum.Mag(); 
+            radius=r;
+          
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+
+/*
+  int  getLatestLay(std::map<int, double> Id_Evis, std::map<int, double> Id_Ts){
+  int latestLay=999;
+  double latestT=-1;
+  //  std::cout<<"ids:";
+  for(auto cell:Id_Evis){
+  int id=cell.first;
+  //    std::cout<<" "<<id;
+  int planeId=(id%1000)/100;
+  if(cell.second<0.1) continue;
+  //    layer_Evis[planeId]+=cell.second;
+  //    layer_Ncell[planeId]++;
+  if(Id_Ts[id]>latestT) { latestT=Id_Ts[id]; latestLay=planeId;}
+
+  }
+  //  std::cout<<std::endl;
+
+
+  return latestLay;
+  }
+*/
+
+
+
+
+bool findRecoMass(double &recomass, int trackid, double earliestT, const TVector3 &initP){
+    double dis,t1,t2,p1,p2, r;
+    bool good=getPosP_enteringEXTMUID(trackid, dis, t1, t2, p1, p2,r);
+    if(!good) { std::cout<<"cannot find Pos_enteringEXTMUID, check"<<std::endl; return false;}
+    int pdg=event->Trajectories[trackid].PDGCode;
+    double m=dbpdg->GetParticle(pdg)->Mass()*1000;  // MeV
+    double charge=dbpdg->GetParticle(pdg)->Charge()/3.; 
+    double vtxTtrue=event->Primaries.begin()->GetPosition().T();
+    double vtxT=vtxTtrue + ran->Gaus(0,1);
+    double deltaT=t2 - vtxT;  //ns
+    double deltaTtrue=t2-vtxT;
+    deltaT=deltaTtrue;
+    TVector3 endpos;  // cm
+
+    double beta=dis/(t2-t1)/300.;
+    double gamma=1./sqrt(1-beta*beta);
+    recomass= (p1+p2)/2./beta/gamma;
+  
+    /////// method2 //////
+    double P=r*3*0.6;
+    recomass=P/beta/gamma;
+    //  std::cout<<"p1:"<<p1<<" p2:"<<p2<<" P:"<<P<<" recomass:"<<recomass<<std::endl;
+    //  std::cout<<"pdg:"<<pdg<<"  dis:"<<dis<<" dt:"<<t2-t1<<" beta:"<<beta<<" recomass:"<<recomass<<std::endl;
+    return true;
+}
+
+
+
+bool getRecoMass(double &mreco, double &mreco2, double dis2extmuid, double p, double t0, double textmuid, double cellE){
+
+    double t0reco=t0+ran->Gaus(0,0.26); 
+    double sigma_t=0.054/sqrt(cellE/1000)+0.05;
+    h_sigma_extmuidt->Fill(sigma_t);
+
+    //  sigma_t=0.26;
+    double textmuidreco=textmuid+ran->Gaus(0,sigma_t);
+    double dt=textmuidreco-t0reco;
+    double beta=dis2extmuid/dt/300;
+    double beta2=dis2extmuid/(textmuid-t0)/300;
+  
+    if(beta>=1 || beta<=0 ) return false;
+    double gamma=1/sqrt(1-beta*beta);
+    double gamma2=1/sqrt(1-beta2*beta2);
+    mreco=p/beta/gamma;
+    mreco2=p/beta2/gamma2;
+    return true;
+}
+
+
+
+
+bool gettrklengthEXTMUID(double &lenEXTMUID, int trackid, int lastlayer,  double r, double zc, double yc, const TVector3 &initPos, double b){
+    int pdg=event->Trajectories[trackid].PDGCode;
+    double charge=dbpdg->GetParticle(pdg)->Charge()/3.;
+  
+    Extrap=new extrapolatorEXTMUID(B);
+    Extrap->setRZYC_charge_pos_b(r, zc, yc, charge, initPos, b);
+    TVector3 endPos;
+    bool extrap_succeed;
+    double dis2extmuid2,dis2extmuid1;
+    extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(lastlayer, dis2extmuid2,endPos);
+    //  std::string printname="extrapI"+std::to_string(ientry)+"_trkid"+std::to_string(trackid)+".pdf";  
+    //  Extrap->plot(printname.c_str());
+
+  
+    if(!extrap_succeed) {  
+	//    Extrap->plot(printname.c_str()); 
+	return false;}
+    extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, dis2extmuid1,endPos); //changed 200 to 330
+    if(!extrap_succeed) { std::cout<<"the second extrapolation wrong !!!!!!!"<<std::endl; return false;}
+  
+    lenEXTMUID=(dis2extmuid2-dis2extmuid1)*10.;
+    return true;
+
+}
+
+void fillYokeInfo(int isurface, double x, double y, double z, const TVector3 & p3){
+    double phi=TMath::ATan2(y-centerY, z-centerZ)*180./TMath::Pi();
+    double phiP=TMath::ATan2(p3.Y(), p3.Z())*180./TMath::Pi() ;
+    double thetaXP=TMath::ASin(p3.X()/p3.Mag())*180./TMath::Pi();
+  
+    hp_Yoke[Btype][isurface]->Fill(p3.Mag());
+    hphiPerp[Btype][isurface]->Fill(phiP-phi);
+    hthetaXP[Btype][isurface]->Fill(thetaXP);
+    hphi_Yoke[Btype][isurface]->Fill(phi);
+}
+
+void getYokeSurfaceInfo(int trackid, int &iOuter, int &iInner){
+    iOuter=-1;
+    iInner=-1;
+    double yokeBarrelRmax=3300;
+    double yokeBarrelRmin=2930;
+    double yokeBarrelX=4300;
+    double endx=event->Trajectories[trackid].Points.rbegin()->Position.X();
+    double endy=event->Trajectories[trackid].Points.rbegin()->Position.Y();
+    double endz=event->Trajectories[trackid].Points.rbegin()->Position.Z();
+    double r0=sqrt(pow(endy-centerY,2) + pow(endz- centerZ, 2));
+    if(r0< yokeBarrelRmin) return;
+
+    double r;
+    int nP=event->Trajectories[trackid].Points.size();
+    //  std::cout<<"---------------ienry:"<<ientry<<"  trackid:"<<trackid<<" end out of yoke inner surface-----------------------------"<<std::endl;
+    for(int i=(nP-1); i>0 ; i--){
+	double x=event->Trajectories[trackid].Points[i].Position.X();
+	double y=event->Trajectories[trackid].Points[i].Position.Y();
+	double z=event->Trajectories[trackid].Points[i].Position.Z();
+	r=sqrt(pow(y-centerY,2) + pow(z-centerZ, 2));
+	if(abs(r-yokeBarrelRmax)<0.001 && abs(x)<yokeBarrelX/2) {
+	    //      std::cout<<"r-yokeBarrelRmax:"<<r-yokeBarrelRmax<<"   ientry:"<<ientry<<"  trackid:"<<trackid<<" outer"<<std::endl;
+	    iOuter=i; fillYokeInfo(1, x, y, z, event->Trajectories[trackid].Points[i].Momentum); continue;
+	}
+	if(abs(r-yokeBarrelRmin)<0.001 && abs(x)<yokeBarrelX/2) {
+	    //      std::cout<<"r-yokeBarrelRmin:"<<r-yokeBarrelRmin<<"    ientry:"<<ientry<<"  trackid:"<<trackid<<" inner"<<std::endl;
+	    iInner=i;  fillYokeInfo(0, x, y, z, event->Trajectories[trackid].Points[i].Momentum);   break;
+	}
+	if(r<yokeBarrelRmin) break;
+    
+    }
+
+    if(iOuter!=-1 && iInner==-1) std::cout<<"###### weird, iOuter not -1 but iInner is 1"<<std::endl;
+
+}
+
+
+
+void getMuPi_kinematics(){
+    //  std::cout<<"getMuPi_kinematics"<<std::endl;
+    if(debug>=3)  showAll();
+    organizeHits();
+    int nsttTrack=sttMap.size();
+  
+    for(auto it = sttMap.begin(); it != sttMap.end(); it++) {
+        int trackid=it->first;
+        //std::cout << "Line # : " << __LINE__ << "\n";
+        if(event->Trajectories[trackid].ParentId!=-1) continue;
+        //std::cout << "Line # : " << __LINE__ << "\n";
+
+        std::string name=event->Trajectories[trackid].Name;
+        //std::cout<<"particle name:"<<name<<std::endl;
+        BpionNoIC5=false;
+
+        //    if(name!="mu+" && name!="mu-" && name!="pi-" && name!="pi+")
+        if (name == "mu-")
+        {
+            mu_count ++;
+        }
+        else if (name == "pi-")
+        {
+            pi_count++;
+        }
+      
+        if(name!="mu-" && name!="pi-")
+        //if(name!="mu-" ) //just for test
+            continue;
+        //std::cout << "SKIPPING PIONS JUST FOR A TEST: ATANU\n";
+        //std::cout << "Line # : " << __LINE__ << "\n";
+
+        if(name=="mu+" || name=="mu-")
+            Btype=1;
+        else
+            Btype=0;
+
+        double trueP=event->Trajectories[trackid].InitialMomentum.P();
+        double trueE=event->Trajectories[trackid].InitialMomentum.E();
+
+        htrueP[Btype][0]->Fill(trueP);
+
+
+        TVector3 p3, initPos;
+        double rad, zc, yc, b;
+        double err, chi2_cir[6];
+        if(!sttreconstructable3(trackid,p3, initPos, rad, zc, yc, b, err, chi2_cir)) continue;
+        //std::cout << "Line # : " << __LINE__ << "\n";
+        //    bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &r, double &zc, double &yc, double &b){
+        //std::cout<<"reconstructable in STT"<<std::endl;
+        htrueP[Btype][1]->Fill(trueP);
+        
+        TVector3 endpos;
+        bool isBkg=(Btype==0);
+        
+        std::vector<int> DaughterIds;
+        std::vector<std::string> daughterNames;
+        double intX,intY,intZ;
+        
+        daughterNames.clear();
+        bool endinSTT, endinYoke;
+        bool interact_inextmuid=Interact_InEXTMUID(endinSTT, endinYoke, trackid, intX, intY, intZ, DaughterIds, daughterNames); // have daughters or not
+        if(endinSTT || endinYoke) continue;
+        htrueP[Btype][2]->Fill(trueP);
+        //std::cout << "Line # : " << __LINE__ << "\n";
+
+        ///    std::map<int, double> Id_Evis;
+        std::map<int, std::pair<int,double> > Id_npe_earliestT;
+
+        double extmuidTdiff;
+        //    std::map<int, double> Id_Ts;
+        //    std::string titlename="ientry: "+std::to_string(ientry)+"  "+name+" -> trkid: "+std::to_string(trackid);
+        //    myEXTMUIDgeo->BuildNew(titlename.c_str());
+        //    if(DaughterIds.size()>0) myEXTMUIDgeo->Addpars(daughterNames);
+
+        bool haveEXTMUIDhits=findEvis_inextmuid(interact_inextmuid, isBkg, trackid, intX, intY, intZ, Id_npe_earliestT, extmuidTdiff, DaughterIds);
+        if(!haveEXTMUIDhits) continue;
+        //std::cout << "Line # : " << __LINE__ << "\n";
+
+        //std::cout<<"haveEXTMUIDhits pass"<<std::endl;
+        htrueP[Btype][3]->Fill(trueP);
+
+        chi2_cir[3]*=1000000;
+        chi2_cir[4]*=100000;
+        chi2_cir[5]*=1E12;
+
+        for(int i=0;i<6;i++){
+            hchi2_cir[Btype][i]->Fill(chi2_cir[i]);
+        }
+
+        herr_cir[Btype]->Fill(err);
+        if(isBkg && chi2_cir[1]>110 ) { /*std::cout<<"ientry:"<<ientry<<"  trackid:"<<trackid<<"  name:"<<name<<" chi2_cir:"<<chi2_cir[0]<<" err:"<<err<<" chi2_cir[1]:"<<chi2_cir[1]<<" chi2_cir[2]:"<<chi2_cir[2]<<" chi2_cir[3]:"<<chi2_cir[3]<<std::endl; */ continue;}
+        //if(!isBkg && chi2_cir[1]>110 ) { std::cout<<"ientry:"<<ientry<<"  trackid:"<<trackid<<"  name:"<<name<<" chi2_cir:"<<chi2_cir[0]<<" err:"<<err<<"       chi2_cir[1]:"<<chi2_cir[1]<<std::endl; }
+        
+        htrueP[Btype][4]->Fill(trueP);
+            
+        
+        //    int latestLay=getLatestLay(Id_Evis, Id_Ts);
+        //    if(latestLay==999) return;
+        //    if(Btype==0) myEXTMUIDgeo->Plot();
+
+        double layer_extmuid_Evis[3];
+        double layer_Evis[3];
+        double layer_Ncell[3];
+        double layer_Span[3];
+        double layer_Dis[3];
+        double cellEmax,cellEmin, cellEavg, cellEr, cellNtot;
+
+        std::string titlename="ientry: "+std::to_string(ientry)+"  "+name+" -> trkid: "+std::to_string(trackid);
+        //    myEXTMUIDgeo->BuildNew(titlename.c_str());
+        //    if(isBkg) myEXTMUIDgeo->AddEndPoint(intX-centerX,intY-centerY,intZ-centerZ);
+        //    if(DaughterIds.size()>0) myEXTMUIDgeo->Addpars(daughterNames);
+        
+
+        double earliestT, earliestCellE;
+        std::map < int, float>  layer_energy_extmuid=getInfo(Id_npe_earliestT, earliestCellE, earliestT, layer_extmuid_Evis, layer_Ncell, layer_Span, layer_Dis, cellEmax, cellEmin, cellEavg, cellEr, cellNtot);
+        int latestEXTMUIDLayer;
+        float vis_energy_extmuid;
+        double mreco,mreco2;
+        
+        //std::cout << "ONE ROUND: ----------------------------------- " << mu_count << " ----------- STARTS....\n";
+        for (std::map <int, float>::iterator it = layer_energy_extmuid.begin(); it != layer_energy_extmuid.end(); ++it)
+        {
+            latestEXTMUIDLayer = it->first;
+            vis_energy_extmuid = it->second;
+           // std::cout << latestEXTMUIDLayer << ",       " << vis_energy_extmuid << "\n";
+            if(interact_inextmuid){
+                hcate[Btype][0]->Fill(latestEXTMUIDLayer/4);
+                if (Btype == 1) sig_count++;
+                hcateIntEXTMUID[Btype][0]->Fill(latestEXTMUIDLayer);
+                h_layer_Evis_IntEXTMUID[Btype][0]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+            }
+            else {
+                hcate[Btype][0]->Fill(latestEXTMUIDLayer/4+2);
+                if (Btype == 1) sig_count++;
+                hcateNoIntEXTMUID[Btype][0]->Fill(latestEXTMUIDLayer);
+                h_layer_Evis_NoIntEXTMUID[Btype][0]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+            }
+        }
+        //std::cout << "ONE ROUND: ----------------------------------- " << mu_count << " ----------- ENDS ...\n\n";
+        
+
+        /*
+          if(!extrap_succeed) continue;
+          bool recowell=getRecoMass(mreco, mreco2, dis2extmuid, p3.Mag(), t0, earliestT, earliestCellE);
+          if(!recowell) continue;
+        */
+
+        //    std::cout<<"mreco:"<<mreco<<std::endl;
+
+        //    if(crossNlayer<5)   std::cout<<"name:"<<name<<" trackid:"<<trackid<<" crossNlayer:"<<crossNlayer<<" ientry:"<<ientry<<std::endl;
+        //    if(crossNlayer<5) return;
+
+        if((name=="pi+" || name=="pi-") && !interact_inextmuid && latestEXTMUIDLayer==4 ) {   BpionNoIC5=true;}
+        //    htrueP[Btype][5]->Fill(trueP);
+
+
+        if(!isBkg){
+            hsig_E_llay->Fill(trueP,latestEXTMUIDLayer);
+            hsig_llay->Fill(latestEXTMUIDLayer);
+
+        } else{
+            hbkg_llay->Fill(latestEXTMUIDLayer);
+            hbkg_E_llay->Fill(trueP,latestEXTMUIDLayer);
+        }
+        
+        //bool gettrklengthEXTMUID(double &lenEXTMUID, int trackid, int lastlayer,  double r, double zc, double yc, const TVector3 &initPos, double b){
+
+        double extmuidLen, P, p2len;
+        //    initPos.Print();
+        if(latestEXTMUIDLayer!=2){ //changed from 4
+            bool extrapwell=gettrklengthEXTMUID(extmuidLen, trackid, latestEXTMUIDLayer, rad, zc, yc, initPos, b);
+            if(!extrapwell) { 
+
+            std::cout<<" extrap return false, ientry:"<<ientry<<"  trackid:"<<trackid<<" name:"<<name<<" latestEXTMUIDLayer:"<<latestEXTMUIDLayer<<" circlefitting err:"<<err<<" chi2_cir:"<<chi2_cir[0]<<std::endl; 
+            if(err>15 || chi2_cir[0] >15000) { std::cout<<"-----> it probabaly have elastic scattering in the STT"<<std::endl; continue; }
+        std::cout << "Line # : " << __LINE__ << "\n";
+            double r02center=sqrt(pow(zc-centerZ,2)+ pow(yc-centerY,2));
+            if((r02center+rad)<3300+0.5) { std::cout<<"------> the circle simply doesnot reach EXTMUID, --> ientry:"<<ientry<<"  trackid:"<<trackid<<std::endl; continue;}
+        //std::cout << "Line # : " << __LINE__ << "\n";
+            if((r02center+rad)>3300+0.5+20+150+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
+        //std::cout << "Line # : " << __LINE__ << "\n";
+
+            int pdg=event->Trajectories[trackid].PDGCode;
+            double charge=dbpdg->GetParticle(pdg)->Charge()/3.;
+            Extrap=new extrapolatorEXTMUID(B);
+            Extrap->setRZYC_charge_pos_b(rad, zc, yc, charge, initPos, b);
+            TVector3 endPos;
+            bool extrap_succeed;
+            double dis2extmuid2,dis2extmuid1;
+            dis2extmuid2=Extrap->extrapolate2outermost(endPos);
+          
+
+            extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, dis2extmuid1,endPos);//replaced 200 by 330
+            if(!extrap_succeed) {
+                std::cout<<" ----> cannot find 330+0.05 crossing point, must be wrong"<<std::endl;
+                continue;
+        //std::cout << "Line # : " << __LINE__ << "\n";
+            }
+
+            extmuidLen = dis2extmuid2-dis2extmuid1;
+            if(extmuidLen<0) { std::cout<<" -----> minus extmuid track length, wrong !!!"<<std::endl; continue;}
+        //std::cout << "Line # : " << __LINE__ << "\n";
+            std::cout<<" ---->it finally find its extmuid tracklength!!: extmuidLen:"<<extmuidLen<<std::endl;
+            }
+            P=p3.Mag();
+            p2len=P/extmuidLen;   // cm;
+        }
+       
+        if(interact_inextmuid){
+            hcate[Btype][1]->Fill(latestEXTMUIDLayer/4);
+            hcateIntEXTMUID[Btype][1]->Fill(latestEXTMUIDLayer);
+            h_layer_Evis_IntEXTMUID[Btype][1]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+        }
+        else {
+            hcate[Btype][1]->Fill(latestEXTMUIDLayer/4+2);
+            hcateNoIntEXTMUID[Btype][1]->Fill(latestEXTMUIDLayer);
+            h_layer_Evis_NoIntEXTMUID[Btype][1]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+        }
+
+
+        //    std::cout<<"P:"<<P<<" extmuidLen:"<<extmuidLen<<" p2len:"<<p2len<<std::endl;
+
+        BP=P;
+        Bextmuidlen=extmuidLen;
+        BE=trueE;
+        BLlayer=latestEXTMUIDLayer;
+        Bmreco=mreco;
+        Btrackid=trackid;
+
+        BcellEmax=cellEmax;
+        BcellEr=cellEr;
+        BcellNtot=cellNtot;
+        BcellEmin=cellEmin;
+        BcellEavg=cellEavg;
+        BcellEr=cellEr;
+        BextmuidTdiff=extmuidTdiff;
+
+        ////////////////
+        double mu,sigma, r, max,min;
+        getMuSigma(layer_Evis, mu , sigma);
+        getRMaxMin(layer_Evis, r, max, min);
+
+        BlayerEmean=mu;
+        BlayerErms=sigma;
+        BlayerEr=r;
+        BlayerEL4=layer_Evis[4];  //must be changed for EXTMUID as there are only 3 layers.. not 4 or 5
+        BlayerEL3=layer_Evis[3];
+        BlayerEmax=max;
+        BlayerEmin=min;
+
+        getMuSigma(layer_Ncell, mu , sigma);
+        getRMaxMin(layer_Ncell, r, max, min);
+
+
+
+        BlayerNcellL0=layer_Ncell[0];
+        BlayerNcellL1=layer_Ncell[1];
+        BlayerNcellL2=layer_Ncell[2];
+        BlayerNcellL3=layer_Ncell[3];
+        BlayerNcellL4=layer_Ncell[4];   //layer_Ncell has only 3 entries in EXTMUID now.. 
+        BlayerNcellmax=max;
+        BlayerNcellmin=min;
+        BlayerNcellr=r;
+        BlayerNcellmean=mu;
+        //  std::cout<<"BlayerNcellL0:"<<BlayerNcellL0<<" BlayerNcellL1:"<<BlayerNcellL1<<std::endl;
+        nntree->Fill();
+        //    getMuSigma(layer_Span, mu , sigma);
+        //    getRMaxMin(layer_Span, r, max, min);
+
+        /////////////////////////////
+
+        double params[10];
+        params[0] = BcellEmax;
+        params[1] = BcellNtot;
+        //    params[2] = cellEavg;
+        params[2] = BcellEr;
+        params[3] = BlayerEmean;
+        params[4] = BlayerErms;
+        params[5] = BlayerEr;
+        params[6] = BlayerEL4;
+        params[7] = BlayerEmax;
+        params[8] = BlayerEmin;
+        params[9] = BlayerNcellmax;
+
+        double paramsLnot4[8];
+        paramsLnot4[0] = BcellEmax;
+        paramsLnot4[1] = BcellNtot;
+        paramsLnot4[2] = BlayerEmean;
+        paramsLnot4[3] = BlayerEmax;
+        paramsLnot4[4] = BlayerEmin;
+        paramsLnot4[5] = BlayerEr;
+        paramsLnot4[6] = BP;
+        paramsLnot4[7] = Bextmuidlen;
+
+        double nn;
+        if(latestEXTMUIDLayer==4){
+            nn=mytrainL4->Value(0,params);
+        }
+        else {
+            nn=mytrainLnot4->Value(0,paramsLnot4);
+        }
+        
+
+        if(nn>0.57){
+            if( interact_inextmuid){
+                hcate[Btype][2]->Fill(latestEXTMUIDLayer/4);
+                hcateIntEXTMUID[Btype][2]->Fill(latestEXTMUIDLayer);
+                h_layer_Evis_IntEXTMUID[Btype][2]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+            }
+            else {
+                hcate[Btype][2]->Fill(latestEXTMUIDLayer/4+2);
+                hcateNoIntEXTMUID[Btype][2]->Fill(latestEXTMUIDLayer);
+                h_layer_Evis_IntEXTMUID[Btype][2]->Fill(latestEXTMUIDLayer, vis_energy_extmuid);
+            }
+        }
+        
+        if(nn>0.57) htrueP[Btype][5]->Fill(trueP);
+
+        if(nn>0.57 && latestEXTMUIDLayer==4) htrueP[Btype][6]->Fill(trueP);
+
+        int iOuter,iInner;
+        getYokeSurfaceInfo(trackid, iOuter,iInner);
+        if(nn>0.57 && iInner>-1)    htrueP[Btype][7]->Fill(trueP);
+        if(nn>0.57 && iOuter>-1)    htrueP[Btype][8]->Fill(trueP);
+        
+        if(iOuter>-1){
+            htrueP[Btype][9]->Fill(trueP);      
+        }
+        else if(iInner>-1){
+            htrueP[Btype][10]->Fill(trueP);
+        }
+        else if(nn>0.57){
+            htrueP[Btype][11]->Fill(trueP);
+        }
+    }
+}
+
+
