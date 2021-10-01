@@ -1,36 +1,15 @@
 #include "TMath.h"
 #include "TCanvas.h"
-//#include "TArrow.h"
-//#include "TMarker.h"
-//#include <TGeoManager.h>
 #include <TRandom3.h>
 #include <TString.h>
-//#include <TObjArray.h>
-//#include <TObjString.h>
-//#include <TGeoTrd2.h>
-//#include <TGeoTube.h>
 #include "TLegend.h"
-//#include <cstring>
-//#include <cmath>
-//#include <sstream>
-//#include "TMath.h"
-//#include "TStyle.h"
-//#include <vector>
-//#include <string>
-//#include <cstdlib>
 #include <TFile.h>
 #include <TTree.h>
 #include <iostream>
 #include "TCanvas.h"
-//#include "TMath.h"
-//#include "TG4Event.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-//#include "TEllipse.h"
-//#include "TBox.h"
-//#include "TDatabasePDG.h"
-//#include "TStreamerInfo.h"
 #include "TMultiLayerPerceptron.h"
 #include "TMLPAnalyzer.h"
 #include"TTree.h"
@@ -44,11 +23,10 @@
 
 
 
-
-
-
 int main(int argc, char* argv[]){
-  TString infile = argv[1];
+  TString input_path = argv[1];
+  TString infile = argv[2];
+  TString output_path = argv[3];
   std::string source_path = __FILE__;
   std::string source_file = source_path;
   for(int i=0; (i = source_path.find("/", i)) != std::string::npos; i++)
@@ -67,8 +45,6 @@ int main(int argc, char* argv[]){
 
   TRandom *ran=new TRandom3(0);
 
-  TString input_path = "/dune/app/users/anath/EDEP_ANALYSIS/muID/ATANUs/EXTMUID/OUTPUT/ROOT/NNINPUT/";
-  TString output_path = "/dune/app/users/anath/EDEP_ANALYSIS/muID/ATANUs/EXTMUID/OUTPUT/ROOT/NNOUTPUT/";
   TString input_file = input_path + infile;
 
   TFile *input=new TFile(input_file);
@@ -103,35 +79,8 @@ int main(int argc, char* argv[]){
   std::cout<<"nentries:"<<nentries<<" nsig:"<<nsig<<" nbkg:"<<nbkg<<std::endl;
 
 
-  /*
-  double cellEmax,cellEr,cellNtot, cellEmin,cellEavg;
-  //double layerEmean,layerErms,layerEr,layerEL2,layerEmax,layerEmin;
-  double layerEmean,layerErms,layerEr,layerEL0,layerEmax,layerEmin;
-  double layerNcellL0;
-  double layerNcellmax;
-   */
-
   double P,extmuidlen,E,cellEmax,cellNtot,cellEmin,cellEavg,cellEr,layerEmean,layerErms,layerEr,layerEL0,layerEmax,layerEmin,layerNcellL0,layerNcellmax,layerNcellmin,layerNcellr,layerNcellmean;
 
-
- /*
-  nntree->SetBranchAddress("type", &type );
-  nntree->SetBranchAddress("cellEmax", &cellEmax );
-  nntree->SetBranchAddress("cellEmin", &cellEmin );
-  nntree->SetBranchAddress("cellEr", &cellEr );
-  nntree->SetBranchAddress("cellNtot", &cellNtot );
-  nntree->SetBranchAddress("layerEmean", &layerEmean );
-  nntree->SetBranchAddress("layerErms", &layerErms );
-  nntree->SetBranchAddress("layerEr", &layerEr );
-  nntree->SetBranchAddress("layerEL0", &layerEL0 );
-//  nntree->SetBranchAddress("layerEL2", &layerEL2 );
-  nntree->SetBranchAddress("layerEmax", &layerEmax );
-  nntree->SetBranchAddress("layerEmin", &layerEmin );
-  nntree->SetBranchAddress("layerNcellL0", &layerNcellL0 );
-//  nntree->SetBranchAddress("layerNcellL1", &layerNcellL1 );
-  nntree->SetBranchAddress("layerNcellmax",&layerNcellmax);
-//--------------------------------------------------------------------------------------------
-*/
 
     //new by atanu
   nntree->SetBranchAddress("type", &type );
@@ -161,15 +110,8 @@ int main(int argc, char* argv[]){
 
   
   TMultiLayerPerceptron *mlp = new TMultiLayerPerceptron
-    //("@cellEmax,@cellNtot,@cellEr,@layerEmean,@layerEL0,@layerErms,@layerEr,@layerEmax,@layerEmin,@layerNcellmax:10:8:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    //("@cellEmax,@cellNtot,@cellEr,@layerEmean,@layerEL0,@layerErms,@layerEr,@layerEmax,@layerEmin,@layerNcellmax:5:2:type", nntree, "Entry$%2", "(Entry$+1)%2");
-//    ("@cellEmax,@cellNtot,@layerEmean,@layerEL0,@layerEr:4:2:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    //("@P,@extmuidlen,@E,@cellEmax,@cellNtot,@cellEmin,@cellEavg,@cellEr,@layerEmean,@layerErms,@layerEr,@layerEL0,@layerEmax,@layerEmin,@layerNcellL0,@layerNcellmax,@layerNcellmin,@layerNcellr,@layerNcellmean:18:16:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    //("@P,@extmuidlen,@E,@cellEmax,@cellNtot,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:11:9:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    //("@P,@E,@cellEmax,@cellNtot,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:7:5:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    //("@cellEmax,@cellNtot,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:4:2:type", nntree, "Entry$%2", "(Entry$+1)%2");
-    ("@cellEmax,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:6:3:type", nntree, "Entry$%2", "(Entry$+1)%2");
-
+    //("@cellEmax,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:6:3:type", nntree, "Entry$%2", "(Entry$+1)%2");
+    ("@cellEmax,@cellEmin,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:6:4:type", nntree, "Entry$%2", "(Entry$+1)%2");
 
 
  
@@ -223,27 +165,6 @@ int main(int argc, char* argv[]){
   TH1F *hLHSig = new TH1F("hLHSig", "NN output", 200, -.5, 1.5);
   TH1F *hLHBac = new TH1F("hLHBac", "NN output", 200, -.5, 1.5);
 
-
-
-/*
-  oldtree->SetBranchAddress("type", &type );
-  oldtree->SetBranchAddress("cellEmax", &cellEmax );
-  oldtree->SetBranchAddress("cellEmin", &cellEmin );
-  oldtree->SetBranchAddress("cellEr", &cellEr );
-  oldtree->SetBranchAddress("cellNtot", &cellNtot );
-  oldtree->SetBranchAddress("layerEmean", &layerEmean );
-  oldtree->SetBranchAddress("layerErms", &layerErms );
-  oldtree->SetBranchAddress("layerEr", &layerEr );
-  oldtree->SetBranchAddress("layerEL0", &layerEL0 );
-//  oldtree->SetBranchAddress("layerEL2", &layerEL2 );
-  oldtree->SetBranchAddress("layerEmax", &layerEmax );
-  oldtree->SetBranchAddress("layerEmin", &layerEmin );
-  oldtree->SetBranchAddress("layerNcellL0", &layerNcellL0 );
-//  oldtree->SetBranchAddress("layerNcellL1", &layerNcellL1 );
-  oldtree->SetBranchAddress("layerNcellmax",&layerNcellmax);
-*/
-
-
     // ATANUS
   oldtree->SetBranchAddress("extmuidlen", &extmuidlen );
   oldtree->SetBranchAddress("E", &E );
@@ -278,20 +199,6 @@ int main(int argc, char* argv[]){
     if(BLlayer!=0) continue;
     if(type==0 && pionNoIC5) continue;
     
-    /*params[0] = cellEmax;
-    params[1] = cellNtot;
-    //params[2] = cellEr;
-    params[2] = layerEmean;
-    //params[4] = layerErms;
-    params[3] = layerEr;
-    params[4] = layerEL0;
-//    params[3] = layerEL2;
-    //params[7] = layerEmax;
-    //params[8] = layerEmin;
-    //params[9] = layerNcellmax;
-    */
-
-
     // ATANUS
      //params[0]=P;
      //params[1]=extmuidlen;

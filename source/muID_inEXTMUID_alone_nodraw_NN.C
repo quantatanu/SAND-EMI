@@ -1,5 +1,4 @@
-
-
+//Based on Bing Guo's code for Ecal mu ID
 
 // file in fhc_stt_cc_list.txt : ECAL barrel module number : top is 0, then it increase counterclockwise, 
 //     0

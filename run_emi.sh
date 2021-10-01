@@ -33,7 +33,6 @@ main ()
     fi
 
     cd $build_dir;
-    base_output_root_dir="/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/";
     if [[ "$(pwd)" != *"build"* ]]
     then
         echo -e "\e[91m    Error: must be run from \"${build_dir}\", instead you are in $(pwd)\e[0m"
@@ -53,7 +52,7 @@ main ()
         if [[ "$@" == *"COMP"* ]] || [[ "$@" == *"comp"* ]] || [[ "$@" == *"-c"* ]] || [[ "$@" == *"-C"* ]]
         then
             echo -e " \e[33m \"COMPILATION\" requested.. compiling...\e[0m";
-            echo "cmake ${source}; make;"
+            echo "cmake ${source_dir}; make;"
             sleep 1;   
             cmake ${source_dir}; make;    
             while true; do
@@ -83,9 +82,14 @@ main ()
                 esac
             done
             echo "                                           "
-            echo " run the NN macros from ROOT-shell: "
-            echo "   .x ${source_dir}/runNN_EXTMUID.C(\"${root_file}\")"
-            echo "   .x ${source_dir}/runNN_EXTMUID.C(\"${root_file}\")" >> ${script_dir}/misc/current_root_command.txt
+            while true; do
+                read -p "   Do you wish to train the ANN? " yn
+                case $yn in
+                    [Yy]* ) echo "./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; break;;
+                    [Nn]* ) return 0;;
+                    * ) echo " Please answer yes or no.";;
+                esac
+            done
             echo "                                           "
         else
                 echo -e " \e[33m \"RUN\" not requested.. skipping...\e[0m";
