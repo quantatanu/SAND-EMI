@@ -11,3 +11,6 @@ misc/*
 
 # ignore this
 git_commands.txt
+
+# tmp files
+.nfs*
