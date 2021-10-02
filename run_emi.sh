@@ -66,7 +66,7 @@ main ()
                 case $yn in
                     [Yy]* ) echo "  Compiling the ANN code first, so that a change in architexture doesn't go un-updated..."; 
                             echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
-                            g++ {source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
+                            g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
                             echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; 
                             ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; 
                             break;;
@@ -77,7 +77,7 @@ main ()
         else
             echo "  Compiling the ANN code first, so that a change in architexture doesn't go un-updated..."; 
             echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
-            g++ {source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
+            g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
             echo -e "\e[32m Training the ANN...";
             echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\"";
             ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}";

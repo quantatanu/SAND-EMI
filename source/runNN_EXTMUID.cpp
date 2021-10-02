@@ -260,11 +260,14 @@ int main(int argc, char* argv[]){
     pad2->SetFillStyle(4000); //will be transparent
     pad2->SetFrameFillStyle(0);
 
-    double dsig, dbac, nncut,  sig_pur, bac_pur, fom_max_sig_pur, fom_max_bac_pur, sig_eff, bac_eff, fom, fom_max = -99999, fom_max_nncut, fom_max_sig_eff, fom_max_bac_eff, nsig_mc, nbac_mc;
+    double dsig, dbac, nncut,  sig_pur, bac_pur, fom_max_sig_pur, fom_max_bac_pur, sig_eff, bac_eff, fom, fom_max = -99999, fom_max_nncut, fom_max_sig_eff, fom_max_bac_eff;
     nncutmin = hLHSig->GetXaxis()->GetXmin();
     nncutmax = hLHSig->GetXaxis()->GetXmax();
-    nsig_mc = 1.0*nsig;
-    nbac_mc = 1.0*nbkg;
+    double nsig_mc = 1.0*nsig;
+    double nbac_mc = 1.0*nbkg;
+    double nsig_evt = hLHSig->GetEntries();
+    double nbac_evt = hLHBac->GetEntries();
+    
     TProfile *hSigEffBacEff = new TProfile("hSigEffBacEff","Efficiency curve", nbin, 0, 1);
     hSigEffBacEff->GetYaxis()->SetTitle("#epsilon_{B}");
     hSigEffBacEff->GetXaxis()->SetTitle("#epsilon_{S}");
@@ -330,7 +333,10 @@ int main(int argc, char* argv[]){
     std::cout << "|---------------------------|\n";
     std::cout << "|Fig. of Merit : " << fom_max << "\n";
     std::cout << "|--------------------------|\n";
-    
+    std::cout << "|nsig_mc           : " << nsig_mc << "\n"; 
+    std::cout << "|nbac_mc           : " << nbac_mc << "\n"; 
+    std::cout << "|nsig_evt           : " << nsig_evt << "\n"; 
+    std::cout << "|nbac_evt           : " << nbac_evt << "\n"; 
     //TCanvas *cc2 = new TCanvas("cc2","signal and background",1200,800,800,400);
     //cc2->Divide(2,1);
     //cc2->cd(1);
