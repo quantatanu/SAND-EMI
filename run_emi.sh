@@ -37,6 +37,10 @@ main ()
         echo -e "   Exiting...\e[0m"
     else
         echo -e "\e[96m";
+        echo "  Loading NN cut values..."
+        echo "  source ${script_dir}/nn_config.sh"
+        source ${script_dir}/nn_config.sh
+        # entering the build directory
         cd $build_dir;
         nfiles="$1";
         t_stamp=$(date +"%Y%m%d%H%M%S");
@@ -52,20 +56,28 @@ main ()
         sleep 1;
 
         echo "  Target file: $output"
-        echo "  ./runMuID_EXTMUID_NN \"${script_dir}input/$file_list\" $nfiles \"${output}\""
-        ./runMuID_EXTMUID_NN "${script_dir}/input/$file_list" $nfiles ${output}
+        echo "  ./runMuID_EXTMUID_NN \"${script_dir}input/$file_list\" $nfiles \"${output}\" \"${ecal_cut}\" \"${emi_cut}\""
+        ./runMuID_EXTMUID_NN "${script_dir}/input/$file_list" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}"
         echo -e "\e[32m             "
         if [[ "$@" != *"yall"*  ]]
         then
             while true; do
                 read -p "   Do you wish to train the ANN? " yn
                 case $yn in
-                    [Yy]* ) echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; break;;
+                    [Yy]* ) echo "  Compiling the ANN code first, so that a change in architexture doesn't go un-updated..."; 
+                            echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
+                            g++ {source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
+                            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; 
+                            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; 
+                            break;;
                     [Nn]* ) "   Ok! Skipping the training..."; return 0;;
                     * ) echo -e "\e[0m"; echo -e "\e[93m  Please answer y/n:\e[0m ";;
                 esac
             done
         else
+            echo "  Compiling the ANN code first, so that a change in architexture doesn't go un-updated..."; 
+            echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
+            g++ {source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
             echo -e "\e[32m Training the ANN...";
             echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\"";
             ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}";

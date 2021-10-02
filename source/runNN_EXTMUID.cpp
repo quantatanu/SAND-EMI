@@ -110,8 +110,10 @@ int main(int argc, char* argv[]){
   
   //NN architecture must be edited here
   TMultiLayerPerceptron *mlp = new TMultiLayerPerceptron
-    //("@cellEmax,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:6:3:type", nntree, "Entry$%2", "(Entry$+1)%2");
+    //("@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:5:2:type", nntree, "Entry$%2", "(Entry$+1)%2");
     ("@cellEmax,@cellEmin,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:6:4:type", nntree, "Entry$%2", "(Entry$+1)%2");
+    //("@cellEmax,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:6:3:type", nntree, "Entry$%2", "(Entry$+1)%2");
+    //("@cellEmax,@cellEmin,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:6:4:type", nntree, "Entry$%2", "(Entry$+1)%2");
 
 
  
@@ -164,7 +166,7 @@ int main(int argc, char* argv[]){
   TFile *outf=new TFile(output_path + "nnout_chi110_EXTMUID.root","recreate");
 
   
-  int nbin = 200;
+  int nbin = ntrain;
   double nncutmin = -.5, nncutmax = 1.5;
   TH1F *hLHSig = new TH1F("hLHSig", "NN output", nbin, nncutmin, nncutmax);
   TH1F *hLHBac = new TH1F("hLHBac", "NN output", nbin, nncutmin, nncutmax);
@@ -194,7 +196,6 @@ int main(int argc, char* argv[]){
 
 
 
-  //double params[10];
   double params[7];
   for (Long64_t i=0;i<nentries; i++) {
     oldtree->GetEntry(i);
@@ -208,7 +209,7 @@ int main(int argc, char* argv[]){
      //params[4]=cellEr; 
      //params[4]=cellNtot;
      params[1]=cellEmin;
-     //params[6]=cellEavg;
+     //params[1]=cellEavg;
      params[2]=layerEmean;
      //params[9]=layerErms;
      params[3]=layerEr; 
@@ -216,12 +217,12 @@ int main(int argc, char* argv[]){
      //params[12]=layerEmax;
      //params[13]=layerEmin;  
      params[5]=layerNcellL0;
-     params[6]=layerNcellmean;
      //params[15]=layerNcellmax;
      //params[16]=layerNcellmin;
-     //rams[11]=layerNcellr; 
+     //params[7]=layerNcellr; 
+     params[6]=layerNcellmean;
    
-
+    ("@cellEmax,@cellEmin,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:6:4:type", nntree, "Entry$%2", "(Entry$+1)%2");
  
     if(type==0)
       hLHBac->Fill(mlp->Evaluate(0,params));
@@ -262,9 +263,6 @@ int main(int argc, char* argv[]){
     double dsig, dbac, nncut,  sig_pur, bac_pur, fom_max_sig_pur, fom_max_bac_pur, sig_eff, bac_eff, fom, fom_max = -99999, fom_max_nncut, fom_max_sig_eff, fom_max_bac_eff, nsig_mc, nbac_mc;
     nncutmin = hLHSig->GetXaxis()->GetXmin();
     nncutmax = hLHSig->GetXaxis()->GetXmax();
-    //nbin = hLHSig->GetNbinsX();
-//    nsig_mc  = hLHSig->GetEntries(); //total entries of hLHSig (although that's not really all prim. sig)
-//    nbac_mc  = hLHBac->GetEntries(); //total entries of hLHSig (although that's not really all prim. sig)
     nsig_mc = 1.0*nsig;
     nbac_mc = 1.0*nbkg;
     TProfile *hSigEffBacEff = new TProfile("hSigEffBacEff","Efficiency curve", nbin, 0, 1);
@@ -272,7 +270,6 @@ int main(int argc, char* argv[]){
     hSigEffBacEff->GetXaxis()->SetTitle("#epsilon_{S}");
     TProfile *hSigEff = new TProfile("hSigEff","Efficiency curve", nbin, nncutmin, nncutmax);
     TProfile *hBacEff = new TProfile("hBacEff","Efficiency curve", nbin, nncutmin, nncutmax);
-    //TProfile *hFOM = new TProfile("hFOM","", nbin, nncutmin, nncutmax);
     TProfile *hFOM = new TProfile("hFOM","", nbin, nncutmin, nncutmax);
     hSigEff->GetYaxis()->SetTitle("Efficiency");
     hSigEff->GetXaxis()->SetTitle("nn cut");
@@ -283,12 +280,9 @@ int main(int argc, char* argv[]){
     hSigEff->SetLineColor(kRed);
     hBacEff->SetLineColor(kBlue);
     hFOM->SetLineColor(kMagenta);
-    //hSigEff = ;
     for (int icut = 0; icut < hLHSig->GetNbinsX(); icut++)
     {
         nncut = hLHSig->GetXaxis()->GetBinCenter(icut); //the nn cut position
-        /*dsig = hLHSig->GetBinContent(icut);
-        dbac = hLHBac->GetBinContent(icut);*/
         dsig = hLHSig->Integral(icut,nbin);
         dbac = hLHBac->Integral(icut,nbin);
         sig_eff = hLHSig->Integral(icut,nbin)/nsig_mc;  //upper part of the nn output 
@@ -296,9 +290,8 @@ int main(int argc, char* argv[]){
         sig_pur = hLHSig->Integral(icut,nbin)/(hLHSig->Integral(icut,nbin)+hLHBac->Integral(icut,nbin)); 
         bac_pur = hLHBac->Integral(0,icut)/(hLHSig->Integral(0,icut)+hLHBac->Integral(0,icut)); 
         if((dsig+dbac) > 0){
-            //fom = sig_eff/sqrt(sig_eff+bac_eff);
             fom = dsig/sqrt(dsig+dbac);
-            if(fom > fom_max) {
+            if(fom >= fom_max) {
                 fom_max = fom; 
                 fom_max_nncut = nncut;
                 fom_max_sig_eff = sig_eff;

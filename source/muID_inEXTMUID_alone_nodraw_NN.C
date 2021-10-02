@@ -53,14 +53,10 @@
 #include <unistd.h>
 
 #include "utils.h"
-//#include "ecalgeo.h"
-//#include "extrapolator.h"
 #include "extrapolatorEXTMUID.h"
 
 using std::endl;
 using std::cout;
-
-
 
 
 std::set<int> fileentry_trk;
@@ -79,7 +75,6 @@ class trackfit{
 };
 
 nnTrainedchi110_EXTMUID *mytrainL0;
-//nnTrainednotL2_chi110_EXTMUID *mytrainLnot2;
 std::map<int,std::pair<int,int> > sttMap;
 std::map<int,std::pair<int,int> > ecalMap;
 std::map<int,std::pair<int,int> > extmuidMap;
@@ -99,11 +94,12 @@ double sigmas=200E-6; // m
 double B=0.6;
 double x0=2.8; // m
 
+double ecal_cut;
+double emi_cut;
+
+
 //double widths[5]={4.42491, 4.52151, 4.61812, 4.71473,4.821};
 double widths[1]={2.0};                             
-
-//TH1 *nn_L2;
-//TH1 *nn_notL2;
 
 
 TH1 *hp_Yoke[2][2];  // type -> inner/outer
@@ -1564,23 +1560,6 @@ void getMuPi_kinematics(){
     BlayerNcellmean=mu;
     nntree->Fill();
 
-    /////////////////////////////
-    /*
-    double params[10];
-    params[0] = BcellEmax;
-    params[1] = BcellNtot;
-    params[2] = BcellEr;
-    params[3] = BlayerEmean;
-    params[4] = BlayerErms;
-    params[5] = BlayerEr;
-    params[6] = BlayerEL2; //changed from 4 to 2
-    params[7] = BlayerEL0; //changed from 4 to 2
-    params[8] = BlayerEmax;
-    params[9] = BlayerEmin;
-    params[10] = BlayerNcellmax;
-    */
-
-
 
     //new parameters by atanu
     double params[20];
@@ -1607,27 +1586,10 @@ void getMuPi_kinematics(){
 
 
 
-/*    double paramsLnot2[8]; //changed from 4 to 2
-    paramsLnot2[0] = BcellEmax;
-    paramsLnot2[1] = BcellNtot;
-    paramsLnot2[2] = BlayerEmean;
-    paramsLnot2[3] = BlayerEmax;
-    paramsLnot2[4] = BlayerEmin;
-    paramsLnot2[5] = BlayerEr;
-    paramsLnot2[6] = BP;
-    paramsLnot2[7] = Bextmuidlen;
-   
-std::cout << BcellEmax << "\t" << BcellNtot << "\t" << BcellEr << "\t" << BlayerEmean << "\t" << BlayerErms << "\t" << BlayerEr << "\t" << BlayerEL2 << "\t";
-
-*/
     if(latestLayer==0){
       double nn=mytrainL0->Value(0,params);
-      if(nn < 0.985) continue;
+      if(nn < emi_cut) continue;
     }
-
-
-
-
 
 
     if(interact_inextmuid){
@@ -1693,15 +1655,20 @@ int main(int argc, char *argv[]){
   
   if(argc<4) { std::cout<<"need startfile, nfile, and outf name"<<std::endl; return 0;}
   
-  //std::string list_file_name = argv[1];
   std::vector<std::string> files=makefilelist(argv[1]); //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
   int startfile=std::atoi(argv[1]); //why is this necessary? Even empty argument suffices....!!!
   //int startfile=std::atoi(argv[1]);
   int nfile=std::atoi(argv[2]);
   const char *outfile=argv[3];
+  double *ptr_ecal_cut = &ecal_cut;
+  double *ptr_emi_cut = &emi_cut;
+  *ptr_ecal_cut = std::atof(argv[4]);
+  *ptr_emi_cut = std::atof(argv[5]);
     std::cout << "LIST FILE: " << argv[1] << "\n";
     std::cout << "StartFILE: " << startfile << "\n";
-    std::cout << "NFiles:    " << nfile << "\n";
+    std::cout << "NFiles   : " << nfile << "\n";
+    std::cout << "Ecal cut :  " << ecal_cut << "\n";
+    std::cout << "EMI  cut :  " << emi_cut << "\n";
 
   debug=0;
   if(argc>=5){
