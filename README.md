@@ -16,7 +16,8 @@ Another variable is the `file_list` that contains list full absolute paths to th
 > /pnfs/dune/persistent/.../SENSDET_ECAL_AND_TRAPE_INTTRK_TRAPEZOIDAL_EXTMUID_2Layers_ActiveIRON_EXTMUID/STT_FHC_012_gsim013_5e17.192819.edep.root
 > </sup></sub>
 
-Once the editing those two variables are done, you can source this script: 
+We also have a file named `nn_config.sh` this contains the two NN cut values, one for the ECAL and the other for the EMI, initially you can set them to 0.5, but then after a training when you obtain a different cut as an output, you need to update that value.
+Once the editing of those variables are done, you can source this script: 
 ``
 source set_env.sh
 ``
