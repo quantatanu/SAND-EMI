@@ -1,3 +1,4 @@
+#include "TStyle.h"
 #include "TMath.h"
 #include "TCanvas.h"
 #include <TRandom3.h>
@@ -19,7 +20,6 @@
 #include"TProfile.h"
 #include"THStack.h"
 #include "TObject.h"
-
 
 
 
@@ -82,7 +82,6 @@ int main(int argc, char* argv[]){
   double P,extmuidlen,E,cellEmax,cellNtot,cellEmin,cellEavg,cellEr,layerEmean,layerErms,layerEr,layerEL0,layerEmax,layerEmin,layerNcellL0,layerNcellmax,layerNcellmin,layerNcellr,layerNcellmean;
 
 
-    //new by atanu
   nntree->SetBranchAddress("type", &type );
   nntree->SetBranchAddress("extmuidlen", &extmuidlen );
   nntree->SetBranchAddress("E", &E );
@@ -109,6 +108,7 @@ int main(int argc, char* argv[]){
 //--------------------------------------------------------------------------------------------
 
   
+  //NN architecture must be edited here
   TMultiLayerPerceptron *mlp = new TMultiLayerPerceptron
     //("@cellEmax,@cellEmin,@cellEavg,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellr,@layerNcellmean:6:3:type", nntree, "Entry$%2", "(Entry$+1)%2");
     ("@cellEmax,@cellEmin,@layerEmean,@layerEr,@layerEL0,@layerNcellL0,@layerNcellmean:6:4:type", nntree, "Entry$%2", "(Entry$+1)%2");
@@ -116,9 +116,9 @@ int main(int argc, char* argv[]){
 
  
   int ntrain = 200;
-  TCanvas *c1_atanu = new TCanvas("c1_atanu", "mlp test atanu");
-    c1_atanu->Divide(2,2);
-  c1_atanu->cd(2);
+  TCanvas *c1_0 = new TCanvas("c1_0", "mlp test");
+  c1_0->Divide(2,2);
+  c1_0->cd(2);
   mlp->Train(ntrain, "text, graph, update=1");
   //export a class for future analysis
   mlp->Export(training_macro.c_str(),"c++");
@@ -126,6 +126,7 @@ int main(int argc, char* argv[]){
 
 
   TCanvas *c1 = new TCanvas("c1", "mlp test");
+  TString outname_eff=output_path + "nneff_chi110_EXTMUID.root";
   TString outname=output_path + "nnresult_chi110_EXTMUID.root";
   c1->Divide(2,2);
   // Use TMLPAnalyzer to see what it looks for
@@ -138,13 +139,13 @@ int main(int argc, char* argv[]){
   // shows how each variable influences the network
   ana.DrawDInputs();
 
-  c1_atanu->cd(2);
+  c1_0->cd(2);
   ana.DrawTruthDeviations();
-  c1_atanu->cd(3);
+  c1_0->cd(3);
   ana.DrawTruthDeviationInsOut();
-  c1_atanu->cd(4);
+  c1_0->cd(4);
   mlp->DrawResult();
-  c1_atanu->Print(output_path + "nnout_mlp_tests_EXTMUID.root");
+  c1_0->Print(output_path + "nnout_mlp_tests_EXTMUID.root");
     
 
   c1->Print(output_path + "inputImpact_EXTMUID.root");
@@ -162,10 +163,12 @@ int main(int argc, char* argv[]){
 
   TFile *outf=new TFile(output_path + "nnout_chi110_EXTMUID.root","recreate");
 
-  TH1F *hLHSig = new TH1F("hLHSig", "NN output", 200, -.5, 1.5);
-  TH1F *hLHBac = new TH1F("hLHBac", "NN output", 200, -.5, 1.5);
+  
+  int nbin = 200;
+  double nncutmin = -.5, nncutmax = 1.5;
+  TH1F *hLHSig = new TH1F("hLHSig", "NN output", nbin, nncutmin, nncutmax);
+  TH1F *hLHBac = new TH1F("hLHBac", "NN output", nbin, nncutmin, nncutmax);
 
-    // ATANUS
   oldtree->SetBranchAddress("extmuidlen", &extmuidlen );
   oldtree->SetBranchAddress("E", &E );
   oldtree->SetBranchAddress("P", &P );
@@ -192,33 +195,31 @@ int main(int argc, char* argv[]){
 
 
   //double params[10];
-  double params[9];
-  //double params[5];
+  double params[7];
   for (Long64_t i=0;i<nentries; i++) {
     oldtree->GetEntry(i);
     if(BLlayer!=0) continue;
     if(type==0 && pionNoIC5) continue;
     
-    // ATANUS
      //params[0]=P;
      //params[1]=extmuidlen;
-     //params[1]=E;
+     //params[2]=E;
      params[0]=cellEmax;
      //params[4]=cellEr; 
-     //params[1]=cellNtot;
+     //params[4]=cellNtot;
      params[1]=cellEmin;
-     params[2]=cellEavg;
-     params[3]=layerEmean;
-     //params[10]=layerErms;
-     params[4]=layerEr; 
-     params[5]=layerEL0;
-     //params[13]=layerEmax;
-     //params[14]=layerEmin;  
-     params[6]=layerNcellL0;
-     //params[16]=layerNcellmax;
-     //params[17]=layerNcellmin;
-     params[7]=layerNcellr; 
-     params[8]=layerNcellmean;
+     //params[6]=cellEavg;
+     params[2]=layerEmean;
+     //params[9]=layerErms;
+     params[3]=layerEr; 
+     params[4]=layerEL0;
+     //params[12]=layerEmax;
+     //params[13]=layerEmin;  
+     params[5]=layerNcellL0;
+     params[6]=layerNcellmean;
+     //params[15]=layerNcellmax;
+     //params[16]=layerNcellmin;
+     //rams[11]=layerNcellr; 
    
 
  
@@ -245,12 +246,116 @@ int main(int argc, char* argv[]){
   hLHBac->SetFillStyle(3008);
   hLHBac->SetFillColor(kBlue);
   hLHBac->Draw("same hist");
-  c1->Print(outname);
-  ///////////
 
+
+  std::cout << "----------------------------EFFICIENCY ANALYSIS -----------------------------------------------\n";
+  //----------------------------EFFICIENCY ANALYSIS -----------------------------------------------
+    gStyle->SetOptStat(0);
+    TCanvas *cc = new TCanvas("cc","signal and background",1200,100,1530,500);
+    cc->Divide(3,1);
+    cc->cd(1);
+    TPad *pad1 = new TPad("pad1","",0,0,1,1);
+    TPad *pad2 = new TPad("pad2","",0,0,1,1);
+    pad2->SetFillStyle(4000); //will be transparent
+    pad2->SetFrameFillStyle(0);
+
+    double dsig, dbac, nncut,  sig_pur, bac_pur, fom_max_sig_pur, fom_max_bac_pur, sig_eff, bac_eff, fom, fom_max = -99999, fom_max_nncut, fom_max_sig_eff, fom_max_bac_eff, nsig_mc, nbac_mc;
+    nncutmin = hLHSig->GetXaxis()->GetXmin();
+    nncutmax = hLHSig->GetXaxis()->GetXmax();
+    //nbin = hLHSig->GetNbinsX();
+//    nsig_mc  = hLHSig->GetEntries(); //total entries of hLHSig (although that's not really all prim. sig)
+//    nbac_mc  = hLHBac->GetEntries(); //total entries of hLHSig (although that's not really all prim. sig)
+    nsig_mc = 1.0*nsig;
+    nbac_mc = 1.0*nbkg;
+    TProfile *hSigEffBacEff = new TProfile("hSigEffBacEff","Efficiency curve", nbin, 0, 1);
+    hSigEffBacEff->GetYaxis()->SetTitle("#epsilon_{B}");
+    hSigEffBacEff->GetXaxis()->SetTitle("#epsilon_{S}");
+    TProfile *hSigEff = new TProfile("hSigEff","Efficiency curve", nbin, nncutmin, nncutmax);
+    TProfile *hBacEff = new TProfile("hBacEff","Efficiency curve", nbin, nncutmin, nncutmax);
+    //TProfile *hFOM = new TProfile("hFOM","", nbin, nncutmin, nncutmax);
+    TProfile *hFOM = new TProfile("hFOM","", nbin, nncutmin, nncutmax);
+    hSigEff->GetYaxis()->SetTitle("Efficiency");
+    hSigEff->GetXaxis()->SetTitle("nn cut");
+    hSigEff->SetLineWidth(2);
+    hBacEff->SetLineWidth(2);
+    hFOM->GetYaxis()->SetTitle("FOM");
+    hFOM->SetLineWidth(2);
+    hSigEff->SetLineColor(kRed);
+    hBacEff->SetLineColor(kBlue);
+    hFOM->SetLineColor(kMagenta);
+    //hSigEff = ;
+    for (int icut = 0; icut < hLHSig->GetNbinsX(); icut++)
+    {
+        nncut = hLHSig->GetXaxis()->GetBinCenter(icut); //the nn cut position
+        /*dsig = hLHSig->GetBinContent(icut);
+        dbac = hLHBac->GetBinContent(icut);*/
+        dsig = hLHSig->Integral(icut,nbin);
+        dbac = hLHBac->Integral(icut,nbin);
+        sig_eff = hLHSig->Integral(icut,nbin)/nsig_mc;  //upper part of the nn output 
+        bac_eff = hLHBac->Integral(icut,nbin)/nbac_mc;     //lower part of the nn output
+        sig_pur = hLHSig->Integral(icut,nbin)/(hLHSig->Integral(icut,nbin)+hLHBac->Integral(icut,nbin)); 
+        bac_pur = hLHBac->Integral(0,icut)/(hLHSig->Integral(0,icut)+hLHBac->Integral(0,icut)); 
+        if((dsig+dbac) > 0){
+            //fom = sig_eff/sqrt(sig_eff+bac_eff);
+            fom = dsig/sqrt(dsig+dbac);
+            if(fom > fom_max) {
+                fom_max = fom; 
+                fom_max_nncut = nncut;
+                fom_max_sig_eff = sig_eff;
+                fom_max_bac_eff = bac_eff;
+                fom_max_sig_pur = sig_pur;
+                fom_max_bac_pur = bac_pur;
+            }
+        }
+
+
+        hSigEffBacEff->Fill(sig_eff, bac_eff);
+        hSigEff->Fill(nncut, sig_eff);
+        hBacEff->Fill(nncut, bac_eff);
+        hFOM->Fill(nncut,fom);
+    }
+    std::cout << "\n\n ...................... \n\n";
+
+
+    pad1->Draw();
+    pad1->cd();
+    hSigEff->Draw("");
+    hBacEff->Draw("same");
+    pad2->Draw();
+    pad2->cd();
+    hFOM->Draw("Y+");
+    
+    
+    std::cout << "\n|---------------------------|\n";
+    std::cout << "|NN cut            : " << fom_max_nncut << "\n";
+    std::cout << "|---------------------------|\n";
+    std::cout << "|Sig Efficiency    : " << fom_max_sig_eff*100 << "\n";
+    std::cout << "|Sig Purity        : " << fom_max_sig_pur*100 << "\n";
+    std::cout << "|---------------------------|\n";
+    std::cout << "|Bac Efficiency    : " << 100-fom_max_bac_eff*100 << "\n";
+    std::cout << "|Bac Purity        : " << fom_max_bac_pur*100 << "\n";
+    std::cout << "|---------------------------|\n";
+    std::cout << "|Fig. of Merit : " << fom_max << "\n";
+    std::cout << "|--------------------------|\n";
+    
+    //TCanvas *cc2 = new TCanvas("cc2","signal and background",1200,800,800,400);
+    //cc2->Divide(2,1);
+    //cc2->cd(1);
+    cc->cd(2);
+    hLHSig->Draw();
+    hLHBac->Draw("same");
+    cc->cd(3);
+    //hSigEffBacEff->Draw();
+    hFOM->Draw();
+  //----------------------------EFFICIENCY ANALYSIS ENDS ------------------------------------------
+
+  c1->Print(outname);
+  cc->Print(outname_eff);
+  ///////////
 
   outf->Write();
   outf->Close();
+
 
   return 0;
 

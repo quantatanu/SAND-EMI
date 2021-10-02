@@ -16,7 +16,7 @@
 #                                                                                   #
 #####################################################################################
 
-#example commad: source run_emi.sh N 
+#example commad: source run_emi.sh N -yall 
 
 #####################################################################################
 # Main script starts                                                                 
@@ -54,23 +54,22 @@ main ()
         echo "  Target file: $output"
         echo "  ./runMuID_EXTMUID_NN \"${script_dir}input/$file_list\" $nfiles \"${output}\""
         ./runMuID_EXTMUID_NN "${script_dir}/input/$file_list" $nfiles ${output}
-        while true; do
-            read -p "   Do you wish to keep a copy of the mu-ID output in: ${backup_output_dir}? " yn
-            case $yn in
-                [Yy]* ) cp ${output} ${backup_output_dir}; break;;
-                [Nn]* ) break;;
-                * ) echo -e "\e[0m"; echo -e "\e[93m  Please answer y/n: \e[0m ";;
-            esac
-        done
-        echo -e "\e[32m                                           "
-        while true; do
-            read -p "   Do you wish to train the ANN? " yn
-            case $yn in
-                [Yy]* ) echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; break;;
-                [Nn]* ) "   Ok! Skipping the training..."; return 0;;
-                * ) echo -e "\e[0m"; echo -e "\e[93m  Please answer y/n:\e[0m ";;
-            esac
-        done
+        echo -e "\e[32m             "
+        if [[ "$@" != *"yall"*  ]]
+        then
+            while true; do
+                read -p "   Do you wish to train the ANN? " yn
+                case $yn in
+                    [Yy]* ) echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; break;;
+                    [Nn]* ) "   Ok! Skipping the training..."; return 0;;
+                    * ) echo -e "\e[0m"; echo -e "\e[93m  Please answer y/n:\e[0m ";;
+                esac
+            done
+        else
+            echo -e "\e[32m Training the ANN...";
+            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\"";
+            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}";
+        fi
         echo -e "\e[96m                                           "
     fi #SCRIPT DIRECTORY CHECK IF CONDITION ENDS
     cd $script_dir;

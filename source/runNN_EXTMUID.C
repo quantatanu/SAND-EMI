@@ -180,28 +180,6 @@ void runNN_EXTMUID(TString infile){
   TH1F *hLHSig = new TH1F("hLHSig", "NN output", nbin, nncutmin, nncutmax);
   TH1F *hLHBac = new TH1F("hLHBac", "NN output", nbin, nncutmin, nncutmax);
 
-
-
-/*
-  oldtree->SetBranchAddress("type", &type );
-  oldtree->SetBranchAddress("cellEmax", &cellEmax );
-  oldtree->SetBranchAddress("cellEmin", &cellEmin );
-  oldtree->SetBranchAddress("cellEr", &cellEr );
-  oldtree->SetBranchAddress("cellNtot", &cellNtot );
-  oldtree->SetBranchAddress("layerEmean", &layerEmean );
-  oldtree->SetBranchAddress("layerErms", &layerErms );
-  oldtree->SetBranchAddress("layerEr", &layerEr );
-  oldtree->SetBranchAddress("layerEL0", &layerEL0 );
-//  oldtree->SetBranchAddress("layerEL2", &layerEL2 );
-  oldtree->SetBranchAddress("layerEmax", &layerEmax );
-  oldtree->SetBranchAddress("layerEmin", &layerEmin );
-  oldtree->SetBranchAddress("layerNcellL0", &layerNcellL0 );
-//  oldtree->SetBranchAddress("layerNcellL1", &layerNcellL1 );
-  oldtree->SetBranchAddress("layerNcellmax",&layerNcellmax);
-*/
-
-
-    // ATANUS
   oldtree->SetBranchAddress("extmuidlen", &extmuidlen );
   oldtree->SetBranchAddress("E", &E );
   oldtree->SetBranchAddress("P", &P );
@@ -229,27 +207,11 @@ void runNN_EXTMUID(TString infile){
 
   //double params[10];
   double params[7];
-  //double params[5];
   for (Long64_t i=0;i<nentries; i++) {
     oldtree->GetEntry(i);
     if(BLlayer!=0) continue;
     if(type==0 && pionNoIC5) continue;
     
-    /*params[0] = cellEmax;
-    params[1] = cellNtot;
-    //params[2] = cellEr;
-    params[2] = layerEmean;
-    //params[4] = layerErms;
-    params[3] = layerEr;
-    params[4] = layerEL0;
-//    params[3] = layerEL2;
-    //params[7] = layerEmax;
-    //params[8] = layerEmin;
-    //params[9] = layerNcellmax;
-    */
-
-
-    // ATANUS
      //params[0]=P;
      //params[1]=extmuidlen;
      //params[2]=E;
@@ -296,16 +258,6 @@ void runNN_EXTMUID(TString infile){
   hLHBac->SetFillStyle(3008);
   hLHBac->SetFillColor(kBlue);
   hLHBac->Draw("same hist");
-
-
-
-
-
-
-
-
-
-
 
 
   std::cout << "----------------------------EFFICIENCY ANALYSIS -----------------------------------------------\n";
