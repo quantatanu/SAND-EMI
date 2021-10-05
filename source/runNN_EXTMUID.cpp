@@ -298,9 +298,7 @@ int main(int argc, char* argv[]){
       bac_pur = real_bac/tot_bac; if(tot_sig <= 0) bac_pur = 0;
       //std::cout << "nn: " << fom_max_nncut << ", real_sig+fake_sig: " << real_sig+fake_sig << ", sig_eff: " << fom_max_sig_eff << ", bac_eff: " << fom_max_bac_eff << ", sig_pur: " << fom_max_sig_pur << ", bac_pur: " << fom_max_bac_pur << ", fom: " << fom_max << "\n";
       if((real_sig+fake_sig) > 0){
-      //if((real_sig+real_bac) > 0){
           fom = real_sig/sqrt(real_sig+fake_sig);
-          //fom = real_sig/sqrt(real_sig+real_bac);
           if(fom >= fom_max) {
               fom_max = fom; 
               fom_max_nncut = nncut;
@@ -333,7 +331,6 @@ int main(int argc, char* argv[]){
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
   printf ("\n| nn cut       | sig eff %%  |  bac eff %%  |  sig pur %%  |  bac pur %%  |  fom [sig/sqrt(sig+bac)]  |   nsig   |    nbac   |");
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
-  //printf ("\n|      %-6d  |     %2.2f   |     %2.2f    |    %2.2f   |     %2.2f    |           %-6d          |%8d | %8d |", fom_max_nncut, fom_max_sig_eff*100, 100-fom_max_bac_eff*100, fom_max_sig_pur*100, fom_max_bac_pur*100, nsig_evt, nbac_evt);
   printf ("\n|      %-3.3f  |     %2.2f   |     %2.2f    |    %2.2f   |     %2.2f    |           %-6d          |%8d | %8d |", fom_max_nncut, fom_max_sig_eff*100, fom_max_bac_eff*100, fom_max_sig_pur*100, fom_max_bac_pur*100, nsig_evt, nbac_evt);
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
 

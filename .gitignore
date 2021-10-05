@@ -4,7 +4,8 @@ build/*
 !build/.gitignore
 
 
-
+# log files
+logs/*
 
 # misc dir
 misc/*
