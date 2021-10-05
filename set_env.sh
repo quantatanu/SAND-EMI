@@ -24,6 +24,8 @@ echo "  unset source_dir";
 unset source_dir
 echo -e "  unset build_dir\e[0m";
 unset build_dir
+echo -e "  unset log_dir\e[0m";
+unset log_dir
 #...................................................................................#
 
 sleep 1;
@@ -35,7 +37,11 @@ then
         script_dir="$(dirname $script_path)";
         source_dir="${script_dir}/source";
         build_dir="${script_dir}/build";
+        log_dir="${script_dir}/logs";
     fi
+    echo -e "\e[33m  Creating the directory: ${log_dir} if it didn't already exist...";
+    log_dir="${log_dir}"; 
+    mkdir -p "${log_dir}"
 
     echo -e "\e[33m  Creating the directory: ${nn_input_dir} if it didn't already exist...";
     nn_input_dir="${base_output_root_dir}NNINPUT/"; 
