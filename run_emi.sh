@@ -19,6 +19,12 @@
 #example commad: source run_emi.sh N -yall 
 
 #####################################################################################
+
+
+
+
+
+t_stamp=$(date +"%Y%m%d%H%M%S");
 # Main script starts                                                                 
 main ()
 {
@@ -43,7 +49,7 @@ main ()
         # entering the build directory
         cd $build_dir;
         nfiles="$1";
-        t_stamp=$(date +"%Y%m%d%H%M%S");
+#        t_stamp=$(date +"%Y%m%d%H%M%S");
         tag="${t_stamp}_${nfiles}_files"; #try to give a time tag
         root_file="out30_chi100_${tag}_EXTMUID.root"
         output="${nn_input_dir}${root_file}";               
@@ -67,8 +73,8 @@ main ()
                     [Yy]* ) echo "  Compiling the ANN code first, so that a change in architexture doesn't go un-updated..."; 
                             echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
                             g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
-                            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\""; 
-                            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}"; 
+                            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\" \"${t_stamp}\""; 
+                            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}" "${t_stamp}"; 
                             break;;
                     [Nn]* ) "   Ok! Skipping the training..."; return 0;;
                     * ) echo -e "\e[0m"; echo -e "\e[93m  Please answer y/n:\e[0m ";;
@@ -79,8 +85,8 @@ main ()
             echo "  g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID"; 
             g++ ${source_dir}/runNN_EXTMUID.cpp `root-config --glibs --cflags` -lTreePlayer -lMLP -lXMLIO -o ${build_dir}/runNN_EXTMUID; 
             echo -e "\e[32m Training the ANN...";
-            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\"";
-            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}";
+            echo "  ./runNN_EXTMUID \"${nn_input_dir}\" \"${root_file}\" \"${nn_output_dir}\" \"${t_stamp}\"";
+            ./runNN_EXTMUID "${nn_input_dir}" "${root_file}" "${nn_output_dir}" "${t_stamp}";
         fi
         echo -e "\e[96m                                           "
     fi #SCRIPT DIRECTORY CHECK IF CONDITION ENDS
@@ -96,6 +102,6 @@ main ()
 
 
 # inputs to main
-main "$@"
+main "$@" 2>&1 | tee -a ${script_dir}/logs/"${t_stamp}"_run_emi.log
 
  
