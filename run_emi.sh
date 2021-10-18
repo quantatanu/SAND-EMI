@@ -16,7 +16,11 @@
 #                                                                                   #
 #####################################################################################
 
-#example commad: source run_emi.sh N -yall 
+#example commad: source run_emi.sh n N -yall 
+#
+# where "n" is the first file number and "N" is the number of files starting from nth 
+# to be analyzed
+# -yall will enable all steps, that is the whole NN chain
 
 #####################################################################################
 
@@ -48,7 +52,8 @@ main ()
         source ${script_dir}/nn_config.sh
         # entering the build directory
         cd $build_dir;
-        nfiles="$1";
+        startfile="$1";
+        nfiles="$2";
 #        t_stamp=$(date +"%Y%m%d%H%M%S");
         tag="${t_stamp}_${nfiles}_files"; #try to give a time tag
         root_file="out30_chi100_${tag}_EXTMUID.root"
@@ -62,8 +67,8 @@ main ()
         sleep 1;
 
         echo "  Target file: $output"
-        echo "  ./runMuID_EXTMUID_NN \"${script_dir}input/$file_list\" $nfiles \"${output}\" \"${ecal_cut}\" \"${emi_cut}\""
-        ./runMuID_EXTMUID_NN "${script_dir}/input/$file_list" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}"
+        echo "  ./runMuID_EXTMUID_NN \"${script_dir}/input/$atanus_file_list\" \"$startfile\" \"$nfiles\" \"${output}\" \"${ecal_cut}\" \"${emi_cut}\""
+        ./runMuID_EXTMUID_NN "${script_dir}/input/$atanus_file_list" "${startfile}" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}"
         echo -e "\e[32m             "
         if [[ "$@" != *"yall"*  ]]
         then

@@ -99,6 +99,10 @@ double sigmas=200E-6; // m
 double B=0.6;
 double x0=2.8; // m
 
+double ecal_cut;
+double emi_cut;
+
+
 double widths[5]={4.42491, 4.52151, 4.61812, 4.71473,4.821};
 //double widths[5]={12.4,12.4,12.4,12.4,12.4};
 int hit_count_test[5] = {0,0,0,0,0};
@@ -1683,7 +1687,7 @@ void getMuPi_kinematics(std::string file_name, int entry_num){
 
         nnHist->Fill(nn); 
 
-        if(nn>0.57){
+        if(nn>ecal_cut){
             if( interact_inecal){
             hcate[Btype][2]->Fill(latestECALLayer/4);
             hcateIntECAL[Btype][2]->Fill(latestECALLayer);
@@ -1722,30 +1726,27 @@ void getMuPi_kinematics(std::string file_name, int entry_num){
 
 
 int main(int argc, char *argv[]){
-  if(argc<4) { std::cout<<"need startfile, nfile, and outf name"<<std::endl; return 0;}
+  if(argc<7) { std::cout<<"need: listfile, startfile#, nfiles, ecal_cut, emi_cut"<<std::endl; return 0;}
   
-  //std::string list_file_name = argv[1];
   std::vector<std::string> files=makefilelist(argv[1]); //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
-  int startfile=std::atoi(argv[1]); //why is this necessary? Even empty argument suffices....!!!
-  //int startfile=std::atoi(argv[1]);
-  int nfile=std::atoi(argv[2]);
-  const char *outfile=argv[3];
+  int startfile=std::atoi(argv[2]);
+  int nfile=std::atoi(argv[3]);
+  const char *outfile=argv[4];
+  double *ptr_ecal_cut = &ecal_cut;
+  double *ptr_emi_cut = &emi_cut;
+  *ptr_ecal_cut = std::atof(argv[5]);
+  *ptr_emi_cut = std::atof(argv[6]);
     std::cout << "LIST FILE: " << argv[1] << "\n";
     std::cout << "StartFILE: " << startfile << "\n";
-    std::cout << "NFiles:    " << nfile << "\n";
-
-  debug=0;
-  if(argc>=5){
-    if(std::strcmp(argv[4],"debug0")==0) debug=0;
-    else if(std::strcmp(argv[4],"debug1")==0) debug=1;
-    else if(std::strcmp(argv[4],"debug2")==0) debug=2;
-    else if(std::strcmp(argv[4],"debug3")==0) debug=3;
-  }
-  int testStartEntry=-1;
-  int testNEntry=-1;
-  if(argc>=6) { testStartEntry=std::atoi(argv[5]);}
-  if(argc==7) { testNEntry=std::atoi(argv[6]);}
+    std::cout << "NFiles   : " << nfile << "\n";
+    std::cout << "Ecal cut :  " << ecal_cut << "\n";
+    std::cout << "EMI  cut :  " << emi_cut << "\n";
   
+
+    int testStartEntry=-1;
+    int testNEntry=-1;
+    //if(argc>=6) { testStartEntry=std::atoi(argv[5]);}
+    //if(argc==7) { testNEntry=std::atoi(argv[6]);}
 
       TFile *file;  
     //  TG4Event* event=NULL;
@@ -1964,7 +1965,6 @@ int main(int argc, char *argv[]){
 	gEDepSimTree->SetBranchAddress("Event",&event);
 	int nentry=gEDepSimTree->GetEntries();
 	cout<<"*******-----------------ifile:"<<ifile<<" "<<files[ifile]<<" nentry:"<<nentry<<std::endl;
-
 	rootrackerTree=(TTree*)file->Get("DetSimPassThru/gRooTracker");
 	brEvtVtx   = rootrackerTree -> GetBranch ("EvtVtx");
 	brEvtVtx    -> SetAddress (EvtVtx);
@@ -2018,11 +2018,6 @@ int main(int argc, char *argv[]){
     outf->Write();
     outf->Close();
 
-    std::cout << "plane 0:" << hit_count_test[0] << "\n";
-    std::cout << "plane 1:" << hit_count_test[1] << "\n";
-    std::cout << "plane 2:" << hit_count_test[2] << "\n";
-    std::cout << "plane 3:" << hit_count_test[3] << "\n";
-    std::cout << "plane 4:" << hit_count_test[4] << "\n";
     std::cout << "mu count: " << mu_count << "[sig_count: " << sig_count << ", bkg_count: " << bkg_count << "], pi count: " << pi_count << "\n";
 
 }

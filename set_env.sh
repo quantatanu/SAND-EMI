@@ -9,7 +9,9 @@ base_output_root_dir="/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/";
 # ********* AND THE FOLLOWING FILE MUST CONTAIN ABSOLUTE PATHS TO THE EDEPSIM ROOT  #  
 # ********* files that you are going to analyze, this file containing the path list #  
 # ********* must be kept within the "input" directory located at home of this pack. #  
-file_list="atanus_common_inputs_ActiveIron.txt";
+atanus_file_list="atanus_common_inputs_ActiveIron.txt";
+#bings_file_list="bings_common_inputs.txt";
+bings_file_list="${atanus_file_list}"
 # **********************************************************************************#
 
 echo -e "  \e[32mSetting up the environment variables...\e[0m";

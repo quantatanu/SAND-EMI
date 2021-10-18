@@ -1654,17 +1654,16 @@ void getMuPi_kinematics(){
 /****************************************MAIN STARTS****************************************/
 int main(int argc, char *argv[]){
   
-  if(argc<4) { std::cout<<"need startfile, nfile, and outf name"<<std::endl; return 0;}
+  if(argc<7) { std::cout<<"need: listfile, startfile#, nfiles, ecal_cut, emi_cut"<<std::endl; return 0;}
   
   std::vector<std::string> files=makefilelist(argv[1]); //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
-  int startfile=std::atoi(argv[1]); //why is this necessary? Even empty argument suffices....!!!
-  //int startfile=std::atoi(argv[1]);
-  int nfile=std::atoi(argv[2]);
-  const char *outfile=argv[3];
+  int startfile=std::atoi(argv[2]);
+  int nfile=std::atoi(argv[3]);
+  const char *outfile=argv[4];
   double *ptr_ecal_cut = &ecal_cut;
   double *ptr_emi_cut = &emi_cut;
-  *ptr_ecal_cut = std::atof(argv[4]);
-  *ptr_emi_cut = std::atof(argv[5]);
+  *ptr_ecal_cut = std::atof(argv[5]);
+  *ptr_emi_cut = std::atof(argv[6]);
     std::cout << "LIST FILE: " << argv[1] << "\n";
     std::cout << "StartFILE: " << startfile << "\n";
     std::cout << "NFiles   : " << nfile << "\n";
@@ -1672,16 +1671,19 @@ int main(int argc, char *argv[]){
     std::cout << "EMI  cut :  " << emi_cut << "\n";
 
   debug=0;
+  /*
   if(argc>=5){
     if(std::strcmp(argv[4],"debug0")==0) debug=0;
     else if(std::strcmp(argv[4],"debug1")==0) debug=1;
     else if(std::strcmp(argv[4],"debug2")==0) debug=2;
     else if(std::strcmp(argv[4],"debug3")==0) debug=3;
   }
+   */
+
   int testStartEntry=-1;
   int testNEntry=-1;
-  if(argc>=6) { testStartEntry=std::atoi(argv[5]);}
-  if(argc==7) { testNEntry=std::atoi(argv[6]);}
+//  if(argc>=6) { testStartEntry=std::atoi(argv[5]);}
+//  if(argc==7) { testNEntry=std::atoi(argv[6]);}
   
   TFile *file;  
   TTree* gEDepSimTree = NULL;
@@ -1896,6 +1898,7 @@ int main(int argc, char *argv[]){
     
     int startEntry=(testStartEntry!=-1)?testStartEntry:0;
     int endplusEntry=(testNEntry!=-1)?(startEntry+testNEntry):nentry;
+    cout << startEntry << " ____________ " << endplusEntry << "\n";
     for(int i=startEntry;i<endplusEntry;i++){
      if(i%500==0) 
         std::cout<<"ientry: "<< i << "[file: " << ifile << "]"<<std::endl;
