@@ -1,6 +1,14 @@
 # SAND-EMI
 This packaged is a modification of Bing Guo's [ecal muon identification code](https://github.com/bingguo1/muIdentification), it is the muon identification code for **E**xternal **M**uon **I**dentification of the SAND detector of the DUNE **N**ear **D**etector.
 
+## VERSION DESCRIPTION
+name: `development/beta_00.02_ecal_enabled` in this version we are going to start trying the following:
+> 1. Modify BING's ecal code:
+> > it should take an EDEP file, run the whole chain, in the end apply the obtain cuts and save a fitered ROOT tree 
+> 2. ECal cut applied tree should be now fed to the EMI code instead of original EDEP tree
+The aim is to see if the ECAL identification significantly impacts the EMI or not!
+
+
 
 ## Installation
 **NOTE: ** always work from the top (package home) directory, run everything from here.
@@ -26,4 +34,7 @@ To build the package, source the `install.sh` script from the top (package home)
 
 ## Running the code
 Just `source run_emi.sh N` will suffice. Where `N` is the number of files (from the top) listed in the `file_list` file that you want to analyze.
+
+
+
 

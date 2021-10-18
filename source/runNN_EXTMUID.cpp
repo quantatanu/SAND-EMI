@@ -261,7 +261,7 @@ int main(int argc, char* argv[]){
   double nbac_mc = 1.0*nbkg;
   double nsig_evt = hLHSig->GetEntries();
   double nbac_evt = hLHBac->GetEntries();
-  
+  std::cout << "nsig_mc : " << nsig_mc << ", nsig_evt: " << nsig_evt << ", nbac_mc: " << nbac_mc << ", nbac_evt: " << nbac_evt << "\n";
   TProfile *hSigEffBacEff = new TProfile("hSigEffBacEff","Efficiency curve", nbin, 0, 1);
   hSigEffBacEff->GetYaxis()->SetTitle("#epsilon_{B}");
   hSigEffBacEff->GetXaxis()->SetTitle("#epsilon_{S}");
@@ -331,7 +331,7 @@ int main(int argc, char* argv[]){
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
   printf ("\n| nn cut       | sig eff %%  |  bac eff %%  |  sig pur %%  |  bac pur %%  |  fom [sig/sqrt(sig+bac)]  |   nsig   |    nbac   |");
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
-  printf ("\n|      %-3.3f  |     %2.2f   |     %2.2f    |    %2.2f   |     %2.2f    |           %-6d          |%8d | %8d |", fom_max_nncut, fom_max_sig_eff*100, fom_max_bac_eff*100, fom_max_sig_pur*100, fom_max_bac_pur*100, nsig_evt, nbac_evt);
+  printf ("\n|      %-3.3f  |     %2.2f   |     %2.2f    |    %2.2f   |     %2.2f    |           %-5.1f          |%8i | %8i |", fom_max_nncut, fom_max_sig_eff*100, fom_max_bac_eff*100, fom_max_sig_pur*100, fom_max_bac_pur*100, (int)nsig_evt, (int)nbac_evt);
   printf ("\n--------------------------------------------------------------------------------------------------------------------------");
 
 
