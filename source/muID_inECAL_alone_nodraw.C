@@ -52,6 +52,8 @@
 #include <cassert>
 #include <algorithm>
 #include <cstdio>
+#include <libgen.h>
+
 
 #include "utils.h"
 //#include "ecalgeo.h"
@@ -1419,7 +1421,7 @@ void getYokeSurfaceInfo(int trackid, int &iOuter, int &iInner){
 
 
 
-void getMuPi_kinematics(std::string file_name, int entry_num){
+void getMuPi_kinematics(std::string file_name, int entry_num, bool &Passed){
     if(debug>=3)  showAll();
     organizeHits();
   
@@ -1688,6 +1690,7 @@ void getMuPi_kinematics(std::string file_name, int entry_num){
         nnHist->Fill(nn); 
 
         if(nn>ecal_cut){
+            Passed = true;
             if( interact_inecal){
             hcate[Btype][2]->Fill(latestECALLayer/4);
             hcateIntECAL[Btype][2]->Fill(latestECALLayer);
@@ -1701,13 +1704,13 @@ void getMuPi_kinematics(std::string file_name, int entry_num){
             }
         }
         
-        if(nn>0.57) htrueP[Btype][5]->Fill(trueP);
-        if(nn>0.57 && latestECALLayer==4) htrueP[Btype][6]->Fill(trueP);
+        if(nn>ecal_cut) htrueP[Btype][5]->Fill(trueP);
+        if(nn>ecal_cut && latestECALLayer==4) htrueP[Btype][6]->Fill(trueP);
 
         int iOuter,iInner;
         getYokeSurfaceInfo(trackid, iOuter,iInner);
-        if(nn>0.57 && iInner>-1)    htrueP[Btype][7]->Fill(trueP);
-        if(nn>0.57 && iOuter>-1)    htrueP[Btype][8]->Fill(trueP);
+        if(nn>ecal_cut && iInner>-1)    htrueP[Btype][7]->Fill(trueP);
+        if(nn>ecal_cut && iOuter>-1)    htrueP[Btype][8]->Fill(trueP);
         
         if(iOuter>-1){
             htrueP[Btype][9]->Fill(trueP);      
@@ -1715,7 +1718,7 @@ void getMuPi_kinematics(std::string file_name, int entry_num){
         else if(iInner>-1){
             htrueP[Btype][10]->Fill(trueP);
         }
-        else if(nn>0.57){
+        else if(nn>ecal_cut){
             htrueP[Btype][11]->Fill(trueP);
         }
     }
@@ -1999,7 +2002,10 @@ int main(int argc, char *argv[]){
 
     if(debug>=3) showAll();
 	    //showAll(); //for debugging, comment later: Atanu
-	    getMuPi_kinematics(files[ifile], nentry);
+       bool passed = false;
+	   getMuPi_kinematics(files[ifile], nentry, passed);
+       std::string base_filename = files[ifile].substr(files[ifile].find_last_of("/") + 1);
+        if(passed == true)std::cout << "PASSED: " << base_filename.substr(8,3) << "\t" << i << "\n";
 
 	}
 	file->Close();

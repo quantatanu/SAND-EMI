@@ -249,10 +249,6 @@ int main(int argc, char* argv[]){
   TCanvas *cc = new TCanvas("cc","signal and background",1200,100,1530,500);
   cc->Divide(3,1);
   cc->cd(1);
-  //TPad *pad1 = new TPad("pad1","",0,0,1,1);
-  //TPad *pad2 = new TPad("pad2","",0,0,1,1);
-  //pad2->SetFillStyle(4000); //will be transparent
-  //pad2->SetFrameFillStyle(0);
 
   double tot_sig, tot_bac, real_sig, real_bac, fake_sig, fake_bac, nncut,  sig_pur, bac_pur, fom_max_sig_pur, fom_max_bac_pur, sig_eff, bac_eff, fom, fom_max = -99999, fom_max_nncut, fom_max_sig_eff, fom_max_bac_eff;
   nncutmin = hLHSig->GetXaxis()->GetXmin();

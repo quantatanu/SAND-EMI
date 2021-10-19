@@ -97,7 +97,6 @@ double x0=2.8; // m
 double ecal_cut;
 double emi_cut;
 
-
 //double widths[5]={4.42491, 4.52151, 4.61812, 4.71473,4.821};
 double widths[1]={2.0};                             
 
