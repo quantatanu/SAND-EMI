@@ -1653,23 +1653,30 @@ void getMuPi_kinematics(){
 /****************************************MAIN STARTS****************************************/
 int main(int argc, char *argv[]){
   
-  if(argc<7) { std::cout<<"need: listfile, startfile#, nfiles, ecal_cut, emi_cut"<<std::endl; return 0;}
-  
-  std::vector<std::string> files=makefilelist(argv[1]); //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
-  int startfile=std::atoi(argv[2]);
-  int nfile=std::atoi(argv[3]);
-  const char *outfile=argv[4];
-  double *ptr_ecal_cut = &ecal_cut;
-  double *ptr_emi_cut = &emi_cut;
-  *ptr_ecal_cut = std::atof(argv[5]);
-  *ptr_emi_cut = std::atof(argv[6]);
-    std::cout << "LIST FILE: " << argv[1] << "\n";
-    std::cout << "StartFILE: " << startfile << "\n";
-    std::cout << "NFiles   : " << nfile << "\n";
-    std::cout << "Ecal cut :  " << ecal_cut << "\n";
-    std::cout << "EMI  cut :  " << emi_cut << "\n";
+    if(argc<7) { std::cout<<"need: listfile, startfile#, nfiles, ecal_cut, emi_cut"<<std::endl; return 0;}
 
-  debug=0;
+    std::vector<std::string> files=makefilelist(argv[1]); //fhc_stt_cc_list.txt"); //edep_fhc_stt_boundarypts_list.txt");
+    int startfile=std::atoi(argv[2]);
+    int nfile=std::atoi(argv[3]);
+    const char *outfile=argv[4];
+    double *ptr_ecal_cut = &ecal_cut;
+    double *ptr_emi_cut = &emi_cut;
+    *ptr_ecal_cut = std::atof(argv[5]);
+    *ptr_emi_cut = std::atof(argv[6]);
+
+    std::cout << "LIST FILE             : " << argv[1] << "\n";
+    std::cout << "StartFILE             : " << startfile << "\n";
+    std::cout << "NFiles                : " << nfile << "\n";
+    std::cout << "Ecal cut              :  " << ecal_cut << "\n";
+    std::cout << "EMI  cut              :  " << emi_cut << "\n";
+    if (argc>7)
+    {
+        std::ifstream ecal_passed_file(argv[7]);
+        std::cout << "ECAL PASSED LIST FILE :  " << argv[7] << "\n";
+    }
+
+
+    debug=0;
   /*
   if(argc>=5){
     if(std::strcmp(argv[4],"debug0")==0) debug=0;
@@ -1901,6 +1908,35 @@ int main(int argc, char *argv[]){
     for(int i=startEntry;i<endplusEntry;i++){
      if(i%500==0) 
         std::cout<<"ientry: "<< i << "[file: " << ifile << "]"<<std::endl;
+
+
+       //ecal passed check step
+       std::string base_filename = files[ifile].substr(files[ifile].find_last_of("/") + 1);
+       std::string file_num = base_filename.substr(8,3);
+       std::string match_line = file_num + "\t" + std::to_string(i);
+       
+      //search for line_entry in the ecal_passed file and skip if matches
+       if (argc>7)
+       {
+           std::string line_entry;
+           std::ifstream ecal_passed_file(argv[7]);
+            if (ecal_passed_file.is_open())
+            {
+               while (getline(ecal_passed_file, line_entry))
+               {
+                  if(line_entry==match_line)
+                   {
+                       std::cout << "~~~~~~~~~~~~~~~~~~~~~~ This entry: " << line_entry << " will be skipped ~~~~~~~~~~~~~~~~~~\n";
+                       continue;
+                   } 
+               }
+               ecal_passed_file.close();
+            }
+       }
+      //------------------------
+
+
+
       if(debug>=1) std::cout<<"---------ientry:"<<i<<std::endl;
       ientry=i;
       Bientry=ientry;

@@ -68,16 +68,26 @@ main ()
         echo "  Target file: $output"
 
         # in case we want to pass a manual file list instead of the default one then -m followed by the list file path must be given
-        if [[ "$@" == *"-m"* ]] 
+        if [[ "$@" == *"-m"* ]] && [[ "$@" == *"-p"* ]] 
         then
             echo -e "\e[35m WARNING: you have chosen a manual file list:"
-            atanus_file_list=echo ${@#*"-m"} # manual file list will be after the option "-m"
+            all_args="$@"
+            atanus_file_list=$(echo "${all_args#*"-m"}" | sed 's/^ *//g' | cut -d ' ' -f1)
             echo "  $atanus_file_list";
+            
+            # in case we want to pass a ecal_passed file and event # list file to skip that particular matching file and event           
+            echo -e "\e[35m WARNING: you have chosen to skip ecal_passed events"
+            ecal_passed_list="$(echo "${all_args#*"-p"}" | sed 's/^ *//g' | cut -d ' ' -f1)"
+            echo "  $ecal_passed_list";
             echo -e "\e[96m";
+            echo "  ./runMuID_EXTMUID_NN \"${script_dir}/input/$atanus_file_list\" \"$startfile\" \"$nfiles\" \"${output}\" \"${ecal_cut}\" \"${emi_cut}\" \"$ecal_passed_list\""
+            ./runMuID_EXTMUID_NN "$atanus_file_list" "${startfile}" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}" "${ecal_passed_list}"
+        else
+            echo "  ./runMuID_EXTMUID_NN \"${script_dir}/input/$atanus_file_list\" \"$startfile\" \"$nfiles\" \"${output}\" \"${ecal_cut}\" \"${emi_cut}\""
+            ./runMuID_EXTMUID_NN "${script_dir}/input/$atanus_file_list" "${startfile}" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}"
         fi
 
-        echo "  ./runMuID_EXTMUID_NN \"${script_dir}/input/$atanus_file_list\" \"$startfile\" \"$nfiles\" \"${output}\" \"${ecal_cut}\" \"${emi_cut}\""
-        ./runMuID_EXTMUID_NN "${script_dir}/input/$atanus_file_list" "${startfile}" "$nfiles" "${output}" "${ecal_cut}" "${emi_cut}"
+
         echo -e "\e[32m             "
         if [[ "$@" != *"yall"*  ]]
         then
