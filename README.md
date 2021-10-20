@@ -3,10 +3,26 @@ This packaged is a modification of Bing Guo's [ecal muon identification code](ht
 
 ## VERSION DESCRIPTION
 name: `development/beta_00.02_ecal_enabled` in this version we are going to start trying the following:
-> 1. Modify BING's ecal code:
-> > it should take an EDEP file, run the whole chain, in the end apply the obtain cuts and save a fitered ROOT tree 
-> 2. ECal cut applied tree should be now fed to the EMI code instead of original EDEP tree
-The aim is to see if the ECAL identification significantly impacts the EMI or not!
+> There are two executables here, `run_ecal.sh` and `run_emi.sh`, instructions on how to run them are given at the end in the **How to run** section.
+> In this version we have an option to check whether ecal ID affects the EMI or not! For this:
+> > we first run the `run_ecal.sh` script with usual params, that is: 
+> > `source run_ecal.sh startN NFiles` (an extra option of `-yall` will run the whole package without y/n interruption)
+> > this will now generate the usual log inside the `$log_dir` with the common `time stamp` but will also generate 2 more files: 
+> > > 1. File containing the list of paths to the edep root files analyzed (let's say `${log_dir}20211020011522_run_ecal_file_list.log`)
+> > > 2. Flie containing the list of file index and events that passed the ecal cut (provided in the `nn_config.sh` file as `$ecal_cut`. This file (let's say: `20211020011522_run_ecal_passed.log`) will look like this:
+> > >    006 3450
+> > >    006 3467
+> > >    ...
+> > >    009 23
+> > >    ...
+> > >    where the first column contains the file indices like `044` coming from a typical file name `/blah/blah/.../blah/STT_FHC_044_gsim045_5e17.192819.edep.root` from the `STT_FHC_044` part.
+> > Then first one should run the `run_emi.sh` in normal mode but on the same list of files that has been analyzed by the `run_ecal.sh` script: that is 
+> > > `source run_emi.sh 0 $(cat ${log_dir}/20211020011522_run_emi_file_list.log | wc -l)`
+> > The above files then should be passed as an argument to the `run_emi.sh` script as:
+> > > `source run_emi.sh 0 $(cat ${log_dir}/20211020011522_run_emi_file_list.log | wc -l) -p ${log_dir}/20211020011522_run_ecal_file_list.log -m ${log_dir}/20211020011522_run_ecal_passed.log -yall`
+> > > in this case, the evnts listed in `*ecal_passed.log` file will be skipped. Results should be compared with the results of the previous normal step to see if they change significantly.
+
+
 
 
 
@@ -33,7 +49,8 @@ source set_env.sh
 To build the package, source the `install.sh` script from the top (package home) directory.
 
 ## Running the code
-Just `source run_emi.sh N` will suffice. Where `N` is the number of files (from the top) listed in the `file_list` file that you want to analyze.
+
+> 
 
 
 
