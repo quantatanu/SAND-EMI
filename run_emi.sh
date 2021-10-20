@@ -120,6 +120,10 @@ main ()
         echo -e "\e[96m                                           "
     fi #SCRIPT DIRECTORY CHECK IF CONDITION ENDS
     cd $script_dir;
+    
+    echo -e "\e[96m Complete log of stdout is in: ${script_dir}/logs/${t_stamp}_run_emi.log"
+    echo "  List of files analyzed are here: ${script_dir}/logs/${t_stamp}_run_emi_file_list.log"
+    echo "  Events that passed the given emi cut $emi_cut (nn_config.sh) are in: ${script_dir}/logs/${t_stamp}_run_emi_passed.log"
 
     echo -e "\e[96m Took $SECONDS for \"main\" to finish..."
     echo -e "   Exiting...\e[0m"
@@ -134,4 +138,3 @@ main ()
 main "$@" 2>&1 | tee -a ${script_dir}/logs/"${t_stamp}"_run_emi.log
 cat ${script_dir}/logs/"${t_stamp}"_run_emi.log | grep PASSED | sed 's/PASSED:\ //' > ${script_dir}/logs/"${t_stamp}"_run_emi_passed.log
 cat ${script_dir}/logs/"${t_stamp}"_run_emi.log | grep "files\[ifile\]" | sed 's/files\[ifile\]://g' > ${script_dir}/logs/"${t_stamp}"_run_emi_file_list.log
- 
