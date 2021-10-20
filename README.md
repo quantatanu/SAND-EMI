@@ -16,8 +16,10 @@ name: `development/beta_00.02_ecal_enabled` in this version we are going to star
 > > >    009 23
 > > >    ...
 > > >    where the first column contains the file indices like `044` coming from a typical file name `/blah/blah/.../blah/STT_FHC_044_gsim045_5e17.192819.edep.root` from the `STT_FHC_044` part.
+
 > > Then first one should run the `run_emi.sh` in normal mode but on the same list of files that has been analyzed by the `run_ecal.sh` script: that is 
 > > > `source run_emi.sh 0 $(cat ${log_dir}/20211020011522_run_emi_file_list.log | wc -l)`
+
 > > The above files then should be passed as an argument to the `run_emi.sh` script as:
 > > > `source run_emi.sh 0 $(cat ${log_dir}/20211020011522_run_emi_file_list.log | wc -l) -p ${log_dir}/20211020011522_run_ecal_file_list.log -m ${log_dir}/20211020011522_run_ecal_passed.log -yall`
 > > > in this case, the evnts listed in `*ecal_passed.log` file will be skipped. Results should be compared with the results of the previous normal step to see if they change significantly.
