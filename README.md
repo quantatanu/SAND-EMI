@@ -52,7 +52,14 @@ To build the package, source the `install.sh` script from the top (package home)
 
 ## Running the code
 
-> 
+### Normal mode
+In normal mode the `run_emi.sh` code must be run only and in the following fashion:
+> `source run_emi.sh N_i N options`
+> where `N_i` is the Nth file of the list from where the analysis should start (0 is the first file)
+> `N` is the number of files to be analyzed starting from the `N_i`th
+> most common `option` is `-yall` this enables the whole chain without any `y/n` interruption, like running first EDEP analysis then training the ANN with the varibales obtained in the edep analysis and then obtaining NN cuts and results (eff, pur).
+> Other options are discussed in the **VERSION DESCRIPTION**.
+ 
 
 
 
