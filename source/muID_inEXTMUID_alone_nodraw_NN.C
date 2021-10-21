@@ -1926,7 +1926,7 @@ int main(int argc, char *argv[]){
                {
                   if(line_entry==match_line)
                    {
-                       std::cout << "~~~~~~~~~~~~~~~~~~~~~~ This entry: " << line_entry << " will be skipped ~~~~~~~~~~~~~~~~~~\n";
+                       //std::cout << "~~~~~~~~~~~~~~~~~~~~~~ This entry: " << line_entry << " will be skipped ~~~~~~~~~~~~~~~~~~\n";
                        continue;
                    } 
                }

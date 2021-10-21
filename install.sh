@@ -10,7 +10,7 @@ then
     return 1
 fi
 
-if [[ "$(pwd)" != *"${script_dir}"* ]]
+if [[ "$(pwd)/" != *"${script_dir}"* ]]
 then
     echo -e "\e[31mError: must be run from \"${script_dir}\", instead you are in $(pwd)";
     echo -e "Exiting...\e[0m";

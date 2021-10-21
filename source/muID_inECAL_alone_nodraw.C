@@ -6,14 +6,33 @@
 //   1   23
 // 2        22
 
-#include "nnTrainedchi110_ECAL.cxx"
-#include "nnTrainednotL4_chi110_ECAL.cxx"
+//standard c/c++ libs
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <utility>
+#include <functional>
+#include <algorithm>
+#include <libgen.h>
+#include <vector>
+
+
+//ROOT headers
 #include "TArc.h"
 #include "TMath.h"
-#include "TCanvas.h"
 #include "TArrow.h"
+#include "TEllipse.h"
+#include "TBox.h"
+#include "TDatabasePDG.h"
+#include "TStreamerInfo.h"
+#include "TCanvas.h"
 #include "TMarker.h"
-
 #include <TGeoManager.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -22,47 +41,27 @@
 #include <TGeoTrd2.h>
 #include <TGeoTube.h>
 #include "TLegend.h"
-#include <cstring>
-#include <cmath>
-#include <sstream>
-#include "TMath.h"
 #include "TStyle.h"
-#include <vector>
-#include <string>
-#include <cstdlib>
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream>
 #include "TCanvas.h"
-#include "TMath.h"
 #include "TG4Event.h"
 #include "TProfile.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TEllipse.h"
-#include "TBox.h"
-#include "TDatabasePDG.h"
-#include "TStreamerInfo.h"
-#include <cstdlib>
-#include <fstream>
-#include <sstream>
-#include <utility>
-#include <functional>
-#include <cassert>
-#include <algorithm>
-#include <cstdio>
-#include <libgen.h>
 
-
+//NN headers
+#include "nnTrainedchi110_ECAL.cxx"
+#include "nnTrainednotL4_chi110_ECAL.cxx"
 #include "utils.h"
 //#include "ecalgeo.h"
 #include "extrapolatorECAL.h"
 
+
+
 using std::endl;
 using std::cout;
-
-
 
 
 std::set<int> fileentry_trk;
@@ -1735,15 +1734,21 @@ int main(int argc, char *argv[]){
   int startfile=std::atoi(argv[2]);
   int nfile=std::atoi(argv[3]);
   const char *outfile=argv[4];
+  std::string full_out_path(argv[4]);
+  int last_hash_pos = full_out_path.find_last_of("/");
+  std::string output_dir = full_out_path.substr(0, last_hash_pos) + "/";
+  std::ofstream temp_log_file;
   double *ptr_ecal_cut = &ecal_cut;
   double *ptr_emi_cut = &emi_cut;
   *ptr_ecal_cut = std::atof(argv[5]);
   *ptr_emi_cut = std::atof(argv[6]);
-    std::cout << "LIST FILE: " << argv[1] << "\n";
-    std::cout << "StartFILE: " << startfile << "\n";
-    std::cout << "NFiles   : " << nfile << "\n";
-    std::cout << "Ecal cut :  " << ecal_cut << "\n";
-    std::cout << "EMI  cut :  " << emi_cut << "\n";
+    std::cout << "LIST FILE : " << argv[1] << "\n";
+    std::cout << "StartFILE : " << startfile << "\n";
+    std::cout << "NFiles    : " << nfile << "\n";
+    std::cout << "Ecal cut  :  " << ecal_cut << "\n";
+    std::cout << "EMI  cut  :  " << emi_cut << "\n";
+    std::cout << "Output dir:  " << output_dir << "\n";
+
   
 
     int testStartEntry=-1;
@@ -1945,16 +1950,17 @@ int main(int argc, char *argv[]){
     int Ifile, Ientry, Itrackid;
     double nn;
     for(int aa = 0;aa<21;aa++){
-	if(getline(myinfile,line)){
-	    std::istringstream iss(line);
-	    iss>>nn>>Ifile>>Ientry>>Itrackid;
-	    fileentry_trk.insert(Ifile*1000000 + Ientry*100 + Itrackid);
-	}
+        if(getline(myinfile,line)){
+            std::istringstream iss(line);
+            iss>>nn>>Ifile>>Ientry>>Itrackid;
+            fileentry_trk.insert(Ifile*1000000 + Ientry*100 + Itrackid);
+        }
     }
   
     mytrainL4=new nnTrainedchi110_ECAL();
     mytrainLnot4=new nnTrainednotL4_chi110_ECAL();
-
+    //opening a temporary log file to list the file name index and events that passed the ecal cut
+    temp_log_file.open(output_dir + "passed_log.txt", std::ios::out); 
     for(ifile=startfile ;ifile<nfile+startfile;ifile++){
     
 	//    myECALgeo=new ecalgeo();
@@ -2005,7 +2011,10 @@ int main(int argc, char *argv[]){
        bool passed = false;
 	   getMuPi_kinematics(files[ifile], nentry, passed);
        std::string base_filename = files[ifile].substr(files[ifile].find_last_of("/") + 1);
-        if(passed == true)std::cout << "PASSED: " << base_filename.substr(8,3) << "\t" << i << "\n";
+        if(passed == true) 
+        {   
+            temp_log_file << base_filename.substr(8,3) << "\t" << i << "\n";
+        }
 
 	}
 	file->Close();
@@ -2023,6 +2032,7 @@ int main(int argc, char *argv[]){
     */
     outf->Write();
     outf->Close();
+    temp_log_file.close();
 
     std::cout << "mu count: " << mu_count << "[sig_count: " << sig_count << ", bkg_count: " << bkg_count << "], pi count: " << pi_count << "\n";
 
