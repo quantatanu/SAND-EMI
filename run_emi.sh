@@ -125,6 +125,7 @@ main ()
     echo "  List of files analyzed are here: ${script_dir}/logs/${t_stamp}_run_emi_file_list.log"
     echo "  Events that passed the given emi cut $emi_cut (nn_config.sh) are in: ${script_dir}/logs/${t_stamp}_run_emi_passed.log"
 
+    echo "Done EMI analyzing $nfiles, output: ${output}" | mail -s "Done EMI $nfiles, took $SECONDS seconds" atanu.quanta@gmail.com
     echo -e "\e[96m Took $SECONDS for \"main\" to finish..."
     echo -e "   Exiting...\e[0m"
     return 0;
