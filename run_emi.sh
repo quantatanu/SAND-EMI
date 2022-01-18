@@ -148,7 +148,8 @@ main ()
     #mv ${nn_input_dir}passed_log.txt "${log_dir}${t_stamp}"_run_emi_passed.log
 
     echo "  Configurations are saved in ${log_dir}${t_stamp}_emi_configs.log"
-    echo "Output ROOT file    : ${root_file}"                        > ${script_dir}logs/${t_stamp}_emi_configs.log
+    echo "Command:            : source $(basename $0) $@"            > ${script_dir}logs/${t_stamp}_emi_configs.log
+    echo "Output ROOT file    : ${root_file}"                        >> ${script_dir}logs/${t_stamp}_emi_configs.log
     echo "Input edep file list: ${script_dir}input/$bings_file_list" >> ${script_dir}logs/${t_stamp}_emi_configs.log
     echo "First file #        : ${startfile}"                        >> ${script_dir}logs/${t_stamp}_emi_configs.log
     echo "# of files          : ${nfiles}"                           >> ${script_dir}logs/${t_stamp}_emi_configs.log

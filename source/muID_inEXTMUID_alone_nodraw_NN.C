@@ -412,6 +412,8 @@ void showAll(){
     std::cout << " up to " << count << " segments";
     std::cout << std::endl;
     //    if(d->first!="Straw") continue;
+        if(d->first!="EMISci") continue;
+        //if(d->first!="EMCalSci") continue;
     int i=0;
     for (std::vector<TG4HitSegment>::iterator
 	   h = d->second.begin();
@@ -431,7 +433,7 @@ void showAll(){
       TLorentzVector mid= (h->Start+h->Stop)*0.5;
       TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
       std::cout<<" "<<name;
-      std::cout<<" start:"<<h->Start.X()<<" "<<h->Start.Y()<<" "<<h->Start.Z()<<" "<<h->Start.T()<<" endT:"<<h->Stop.T();
+      std::cout<<" start: X: "<<h->Start.X()<<", Y: "<<h->Start.Y()<<", Z: "<<h->Start.Z()<<", startT:"<<h->Start.T()<<" endT:"<<h->Stop.T();
       //      if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) std::cout<<"   !!!!!!! time reverted";
       std::cout<<std::endl;
     }
@@ -485,12 +487,12 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
   }
   else{  // pion
     ihit=0;
-    nhit=event->SegmentDetectors["EXTMUID"].size();
+    nhit=event->SegmentDetectors["EMISci"].size();
   }
 
 
   for(unsigned int i=ihit; i<(ihit+nhit); i++){
-    const TG4HitSegment& h = event->SegmentDetectors["EXTMUID"].at(i);
+    const TG4HitSegment& h = event->SegmentDetectors["EMISci"].at(i);
     double de=h.EnergyDeposit;
     double x = 0.5*(h.Start.X()+h.Stop.X());
     double y = 0.5*(h.Start.Y()+h.Stop.Y());
@@ -656,7 +658,7 @@ int getInfo(std::map<int, std::pair<int, double> > Id_npe_earliestT, double &ear
     //std::cout << "Line: " << __LINE__ << ", planeID: " << planeId << ", modId: " << modId << ", id: " << ", cellId: " << cellId << ", modCellId: " << modCellId  << "\n";
     //double cellcalE=cell.second.first/npe1MeV;
     double cellcalE;
-    for (const TG4HitSegment& h: event->SegmentDetectors["EXTMUID"])
+    for (const TG4HitSegment& h: event->SegmentDetectors["EMISci"])
     {
         double de=h.EnergyDeposit;
         cellcalE=de*npe1MeV;
@@ -796,13 +798,13 @@ void organizeHits(){
       ++it;
   }
 
-  if(event->SegmentDetectors["EXTMUID"].size()>0){
-    pretrackid=event->SegmentDetectors["EXTMUID"].begin()->Contrib[0];
+  if(event->SegmentDetectors["EMISci"].size()>0){
+    pretrackid=event->SegmentDetectors["EMISci"].begin()->Contrib[0];
     nhit=1;
     istart=0;
     posttrackid=pretrackid;
-    for(unsigned long i=1; i<event->SegmentDetectors["EXTMUID"].size(); i++){
-      posttrackid=event->SegmentDetectors["EXTMUID"].at(i).Contrib[0];
+    for(unsigned long i=1; i<event->SegmentDetectors["EMISci"].size(); i++){
+      posttrackid=event->SegmentDetectors["EMISci"].at(i).Contrib[0];
       if(posttrackid==pretrackid) { nhit++;continue;}
       if(extmuidMap.find(pretrackid) ==extmuidMap.end())
         extmuidMap[pretrackid]= std::make_pair(istart,nhit);
@@ -870,7 +872,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
     t_h.push_back(mid.T());
     firstHor=true;
   }
-  else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+  else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
     x_v.push_back(mid.X());
     z_v.push_back(mid.Z());
     t_v.push_back(mid.T());
@@ -894,7 +896,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
       z_h.push_back(postPos.Z());
       t_h.push_back(postPos.T());
     }  
-    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
       x_v.push_back(postPos.X());
       z_v.push_back(postPos.Z());
       t_v.push_back(postPos.T());
@@ -999,7 +1001,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
     t_h.push_back(mid.T());
     firstHor=true;
   }
-  else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+  else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
     x_v.push_back(mid.X());
     z_v.push_back(mid.Z());
     t_v.push_back(mid.T());
@@ -1022,7 +1024,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
       y_h.push_back(postPos.Y());
       z_h.push_back(postPos.Z());
     }  
-    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
       x_v.push_back(postPos.X());
       z_v.push_back(postPos.Z());
     }
@@ -1948,7 +1950,7 @@ int main(int argc, char *argv[]){
 
       if(debug>=3) showAll();
       getMuPi_kinematics(); 
-    //showAll();
+    showAll();
     }
     file->Close();
 

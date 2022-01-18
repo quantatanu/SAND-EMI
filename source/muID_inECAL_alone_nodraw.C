@@ -478,13 +478,13 @@ bool findEvis_inecal(bool interact_inecal, bool isbkg, int trackid, double intX,
     }
     else{  // pion
         ihit=0;
-        //nhit=event->SegmentDetectors["ECAL"].size();
-        nhit=event->SegmentDetectors["ECAL"].size();
+        //nhit=event->SegmentDetectors["EMCalSci"].size();
+        nhit=event->SegmentDetectors["EMCalSci"].size();
     }
 
     for(unsigned int i=ihit; i<(ihit+nhit); i++){
-	//const TG4HitSegment& h = event->SegmentDetectors["ECAL"].at(i);
-	const TG4HitSegment& h = event->SegmentDetectors["ECAL"].at(i);
+	//const TG4HitSegment& h = event->SegmentDetectors["EMCalSci"].at(i);
+	const TG4HitSegment& h = event->SegmentDetectors["EMCalSci"].at(i);
 	double de=h.EnergyDeposit;
 	double x = 0.5*(h.Start.X()+h.Stop.X());
 	double y = 0.5*(h.Start.Y()+h.Stop.Y());
@@ -796,13 +796,13 @@ void organizeHits(){
 	    ++it;
     }
 
-    if(event->SegmentDetectors["ECAL"].size()>0){
-	pretrackid=event->SegmentDetectors["ECAL"].begin()->Contrib[0];
+    if(event->SegmentDetectors["EMCalSci"].size()>0){
+	pretrackid=event->SegmentDetectors["EMCalSci"].begin()->Contrib[0];
 	nhit=1;
 	istart=0;
 	posttrackid=pretrackid;
-	for(unsigned long i=1; i<event->SegmentDetectors["ECAL"].size(); i++){
-	    posttrackid=event->SegmentDetectors["ECAL"].at(i).Contrib[0];
+	for(unsigned long i=1; i<event->SegmentDetectors["EMCalSci"].size(); i++){
+	    posttrackid=event->SegmentDetectors["EMCalSci"].at(i).Contrib[0];
 	    //      std::cout<<"posttrackid:"<<posttrackid<<" nhit:"<<nhit<<std::endl;
 	    if(posttrackid==pretrackid) { nhit++;continue;}
 	    if(ecalMap.find(pretrackid) ==ecalMap.end())
@@ -891,7 +891,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
 	//    ma->DrawMarker(mid.Z(),mid.Y());
 	firstHor=true;
     }
-    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	x_v.push_back(mid.X());
 	z_v.push_back(mid.Z());
 	t_v.push_back(mid.T());
@@ -919,7 +919,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
 	    //      postPos.Print();
 	    //      ma->DrawMarker(postPos.Z(),postPos.Y());
 	}  
-	else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	    x_v.push_back(postPos.X());
 	    z_v.push_back(postPos.Z());
 	    t_v.push_back(postPos.T());
@@ -1036,7 +1036,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
 	t_h.push_back(mid.T());
 	firstHor=true;
     }
-    else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	x_v.push_back(mid.X());
 	z_v.push_back(mid.Z());
 	t_v.push_back(mid.T());
@@ -1059,7 +1059,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
 	    y_h.push_back(postPos.Y());
 	    z_h.push_back(postPos.Z());
 	}  
-	else if(name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	    x_v.push_back(postPos.X());
 	    z_v.push_back(postPos.Z());
 	}
