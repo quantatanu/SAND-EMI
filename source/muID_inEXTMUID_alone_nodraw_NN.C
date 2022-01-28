@@ -336,7 +336,8 @@ bool inEXTMUIDbarrel(const TVector3 &pos){
     double y=pos.Y();
     double z=pos.Z();
     double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
-    if(r<3300+0.5 || r>3300+0.5+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
+    //if(r<3300+0.5 || r>3300+0.5+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
+    if(r<3300 || r>3300+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
     if(abs(x)>2150) return false;
     return true;
 }
@@ -412,14 +413,14 @@ void showAll(){
     std::cout << " up to " << count << " segments";
     std::cout << std::endl;
     //    if(d->first!="Straw") continue;
-        if(d->first!="EMISci") continue;
+    //    if(d->first!="EMISci") continue;
         //if(d->first!="EMCalSci") continue;
     int i=0;
     for (std::vector<TG4HitSegment>::iterator
 	   h = d->second.begin();
 	 h != d->second.end();
 	 ++h) {
-      std::cout << "      "<<i;
+      //std::cout << "      "<<i;
       i++;
       std::cout << " P: " << h->PrimaryId<<" "<<h->Contrib[0];
       std::cout << " E: " << h->EnergyDeposit;
@@ -429,12 +430,15 @@ void showAll(){
 	std::cout<<" "<<h->Contrib[j];
       }
       //      std::cout<<" name:"<<h->GetVolName();
-      //            std::cout << " L: " << h->TrackLength;
+                  std::cout << " L: " << h->TrackLength;
       TLorentzVector mid= (h->Start+h->Stop)*0.5;
       TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
       std::cout<<" "<<name;
       std::cout<<" start: X: "<<h->Start.X()<<", Y: "<<h->Start.Y()<<", Z: "<<h->Start.Z()<<", startT:"<<h->Start.T()<<" endT:"<<h->Stop.T();
-      //      if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) std::cout<<"   !!!!!!! time reverted";
+      double radius = sqrt(pow(h->Start.Y()+2384.73,2)+pow(h->Start.Z()-23910,2));
+      double theta = TMath::ATan((h->Start.Y()+2384.73)/(h->Start.Z()-23910));
+      std::cout << "Name (R=" << radius/10.<<" cm)  : " << geo->FindNode(0,-2384.73+radius*TMath::Sin(theta),23910+radius*TMath::Cos(theta))->GetName() << "\n";
+            if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) std::cout<<"   !!!!!!! time reverted";
       std::cout<<std::endl;
     }
   }
@@ -1326,7 +1330,8 @@ bool gettrklengthEXTMUID(double &lenEXTMUID, int trackid, int lastlayer,  double
   extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(lastlayer, dis2extmuid2,endPos);
   if(!extrap_succeed) {  
     return false;}
-  extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, dis2extmuid1,endPos);
+  //extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, dis2extmuid1,endPos);
+  extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0, dis2extmuid1,endPos);
   if(!extrap_succeed) { std::cout<<"the second extrapolation wrong !!!!!!!"<<std::endl; return false;}
   
   lenEXTMUID=(dis2extmuid2-dis2extmuid1)*10.;
@@ -1487,7 +1492,8 @@ void getMuPi_kinematics(){
       if(err>15 || chi2_cir[0] >15000) { std::cout<<"-----> it probabaly have elastic scattering in the STT"<<std::endl; continue; }
       double r02center=sqrt(pow(zc-centerZ,2)+ pow(yc-centerY,2));
       if((r02center+rad)<3330) { std::cout<<"------> the circle simply doesnot reach EXTMUID, --> ientry:"<<ientry<<"  trackid:"<<trackid<<std::endl; continue;}
-      if((r02center+rad)>3330+0.5+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
+      //if((r02center+rad)>3330+0.5+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
+      if((r02center+rad)>3330+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
 
       int pdg=event->Trajectories[trackid].PDGCode;
       double charge=dbpdg->GetParticle(pdg)->Charge()/3.;
@@ -1950,7 +1956,7 @@ int main(int argc, char *argv[]){
 
       if(debug>=3) showAll();
       getMuPi_kinematics(); 
-    showAll();
+    //showAll();
     }
     file->Close();
 

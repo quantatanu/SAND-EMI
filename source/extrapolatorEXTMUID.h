@@ -99,7 +99,8 @@ void extrapolatorEXTMUID::plot(const char* name){
   double sttr=200;
   double thickness[1]={2};
   double r6[2];
-  r6[0]=330+0.05;
+  //r6[0]=330+0.05;
+  r6[0]=330;
   r6[1]=r6[0]+thickness[0];
 //  r6[2]=r6[1]+thickness[1]; //15 cm passive layer
 //  r6[3]=r6[2]+thickness[2];
@@ -108,7 +109,8 @@ void extrapolatorEXTMUID::plot(const char* name){
   double centerZ=2391; // cm
   
   //double sandr=240;  //what is this???? Why 240???
-  double sandr = 330 + +0.05 + 2; // 19 = 2 + 15 + 2
+  //double sandr = 330 + +0.05 + 2; // 19 = 2 + 15 + 2
+  double sandr = 330 + 2; // 19 = 2 + 15 + 2
   TCanvas *can_extrap=new TCanvas("can_extrap","",600,600);
   can_extrap->Range(centerZ-sandr,centerY-sandr,centerZ+sandr,centerY+sandr);
 
@@ -165,7 +167,8 @@ bool  extrapolatorEXTMUID::extrapolate2EXTMUIDlayer(int extmuidlayer, double &tr
   double thickness[3]={2.};
   double r6[2];
   //r6[0]=sttr;
-  r6[0]=330+0.05;
+  //r6[0]=330+0.05;
+  r6[0]=330;
   r6[1]=r6[0]+thickness[0];
 //  r6[2]=r6[1]+thickness[1]; 
 //  r6[3]=r6[2]+thickness[2];
