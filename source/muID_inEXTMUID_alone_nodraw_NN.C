@@ -394,7 +394,7 @@ double E2PE(double E)
 
 void showAll(){
   std::cout<<"============================================="<<std::endl;
-  for (std::vector<TG4Trajectory>::iterator
+/*  for (std::vector<TG4Trajectory>::iterator
          t = event->Trajectories.begin();
        t != event->Trajectories.end(); ++t) {
     std::cout << "   Traj " << t->TrackId;
@@ -404,16 +404,16 @@ void showAll(){
     std::cout<< " E:"<<t->GetInitialMomentum().E();
     std::cout<<" beginpro:"<<t->Points.begin()->Process<<" "<<t->Points.begin()->Subprocess<<" endpro:"<<(t->Points.end()-1)->Process<<" "<<(t->Points.end()-1)->Subprocess;
     std::cout << std::endl;
-  }
+  }*/
   for (auto d = event->SegmentDetectors.begin();
        d != event->SegmentDetectors.end(); ++d) {
-    std::cout << "   det " << d->first;
-    std::cout << " " << d->second.size();
+    //std::cout << "   det " << d->first;
+    //std::cout << " " << d->second.size();
     int count = 10;
-    std::cout << " up to " << count << " segments";
+    //std::cout << " up to " << count << " segments";
     std::cout << std::endl;
     //    if(d->first!="Straw") continue;
-    //    if(d->first!="EMISci") continue;
+        if(d->first!="EMISci") continue;
         //if(d->first!="EMCalSci") continue;
     int i=0;
     for (std::vector<TG4HitSegment>::iterator
@@ -422,24 +422,26 @@ void showAll(){
 	 ++h) {
       //std::cout << "      "<<i;
       i++;
-      std::cout << " P: " << h->PrimaryId<<" "<<h->Contrib[0];
-      std::cout << " E: " << h->EnergyDeposit;
-      std::cout << " S: " << h->SecondaryDeposit;
-      std::cout << " C: " << h->Contrib.size()<<"->";
-      for(unsigned long j=0;j<h->Contrib.size();j++){
+      //std::cout << " P: " << h->PrimaryId<<" "<<h->Contrib[0];
+      //std::cout << " E: " << h->EnergyDeposit;
+      //std::cout << " S: " << h->SecondaryDeposit;
+      //std::cout << " C: " << h->Contrib.size()<<"->";
+      /*for(unsigned long j=0;j<h->Contrib.size();j++){
 	std::cout<<" "<<h->Contrib[j];
-      }
+      }*/
       //      std::cout<<" name:"<<h->GetVolName();
-                  std::cout << " L: " << h->TrackLength;
+     //             std::cout << " L: " << h->TrackLength;
       TLorentzVector mid= (h->Start+h->Stop)*0.5;
       TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
-      std::cout<<" "<<name;
-      std::cout<<" start: X: "<<h->Start.X()<<", Y: "<<h->Start.Y()<<", Z: "<<h->Start.Z()<<", startT:"<<h->Start.T()<<" endT:"<<h->Stop.T();
+      //std::cout<<" "<<name;
+      //std::cout<<" start: X: "<<h->Start.X()<<", Y: "<<h->Start.Y()<<", Z: "<<h->Start.Z()<<", startT:"<<h->Start.T()<<" endT:"<<h->Stop.T();
       double radius = sqrt(pow(h->Start.Y()+2384.73,2)+pow(h->Start.Z()-23910,2));
       double theta = TMath::ATan((h->Start.Y()+2384.73)/(h->Start.Z()-23910));
-      std::cout << "Name (R=" << radius/10.<<" cm)  : " << geo->FindNode(0,-2384.73+radius*TMath::Sin(theta),23910+radius*TMath::Cos(theta))->GetName() << "\n";
-            if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) std::cout<<"   !!!!!!! time reverted";
-      std::cout<<std::endl;
+      if(theta<0) theta = 2*TMath::Pi()-theta;
+            if((h+1)!= d->second.end() && (h+1)->Start.T()<h->Start.T()) {continue; std::cout<<"   !!!!!!! time reverted";
+            std::cout<<std::endl;}
+      //std::cout << "(R=" << radius/10.<<" cm)  : " << geo->FindNode(0,-2384.73+radius*TMath::Sin(theta),23910+radius*TMath::Cos(theta))->GetName() << "\n";
+      std::cout << "R-theta:\t\t" << radius/10. << "\t\t" << theta << "\n";
     }
   }
 
@@ -512,7 +514,7 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
     TString modstr=geo->GetMother()->GetName();
     int id, modID, slabID, planeID, cellID;
     double d1,d2;
-    if(slabstr.Contains("volTRAPEActiveSlab") == true && slabstr.Contains("PV_0") == true)
+    if(slabstr.Contains("volEMIActiveSlab") == true && slabstr.Contains("PV_0") == true)
     {
         TObjArray* obj1 = slabstr.Tokenize("_");  //volEXTMUIDActiveSlab_125_PV_0
         TObjArray* obj2 = modstr.Tokenize("_");  //EXTMUID_lv_PV_19
@@ -523,7 +525,7 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
         delete obj1;
         delete obj2;
 
-     //   if(slabstr.Contains("volTRAPEActiveSlab") == true) {
+     //   if(slabstr.Contains("volEMIActiveSlab") == true) {
             planeID = slabID;                   // first layer
             if (planeID > 0) continue;      //third layer
      //   }
