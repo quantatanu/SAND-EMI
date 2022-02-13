@@ -3,7 +3,7 @@ This packaged is a modification of Bing Guo's [ecal muon identification code](ht
 
 ## VERSION DESCRIPTION
 name: `development/beta_00.02_ecal_enabled` in this version we are going to start trying the following:
-name:  `development/epc_feb_2022/beta_00.00` in this version we are going to introduce the RPC based EMI for the first time.
+name: `development/double_layer_rpc_emi_feb_2022/beta_00.00` in this version we are going to introduce the RPC based EMI for the first time.
 > There are two executables here, `run_ecal.sh` and `run_emi.sh`, instructions on how to run them are given at the end in the **How to run** section.
 > In this version we have an option to check whether ecal ID affects the EMI or not! For this:
 > > we first run the `run_ecal.sh` script with usual params, that is: 
