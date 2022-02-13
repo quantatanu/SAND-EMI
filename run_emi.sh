@@ -32,6 +32,9 @@ t_stamp=$(date +"%Y%m%d%H%M%S");
 # Main script starts                                                                 
 main ()
 {
+
+    echo "###########################################################################"
+    echo "Starting the run_emi.sh script..."
     # checking if environment is set correctly
     if [[ "${script_dir}" != *"dune"* ]]
     then
@@ -46,9 +49,25 @@ main ()
         echo -e "\e[31m    Error: must be run from: \"${script_dir}\"!"
         echo -e "   Exiting...\e[0m"
     else
+        if [[ "$@" == *"-C"*  ]]
+        then
+            echo "..........................................................................."
+            echo "You have chosen to compile: compileing...";
+            echo "  source ${script_dir}install.sh";
+            source ${script_dir}install.sh;
+            echo "..........................................................................."
+            sleep 1;
+            echo "" 
+            echo "" 
+            echo "" 
+            echo "" 
+            echo "" 
+        fi
+
+        echo "..........................................................................."
         echo -e "  \e[32m   Creating the current run...";
-        run_dir="${base_output_root_dir}EMI_RUN_${t_stamp}/";
-        echo "run_dir=\"${base_output_root_dir}EMI_RUN_${t_stamp}/\"";
+        run_dir="${base_output_root_dir}EMIRPC_RUN_${t_stamp}/";
+        echo "run_dir=\"${base_output_root_dir}EMIRPC_RUN_${t_stamp}/\"";
         echo "mkdir -p \"${run_dir}\"";
         mkdir -p "${run_dir}";
         nn_input_dir="${run_dir}NNINPUT/"
@@ -69,7 +88,7 @@ main ()
         echo "  Loading NN cut values...";
         echo "  source ${script_dir}nn_config.sh";
         source ${script_dir}nn_config.sh;
-        cat ${script_dir}nn_config.sh;
+        cat ${script_dir}nn_config.sh | grep export; 
         echo "  Entering the build directory...";
         echo "  cd $build_dir";
         cd $build_dir;
@@ -157,9 +176,10 @@ main ()
     echo "Starting emi cut    : ${emi_cut}"                          >> ${script_dir}logs/${t_stamp}_emi_configs.log 
     mv ${script_dir}logs/${t_stamp}_emi_configs.log ${log_dir}${t_stamp}_emi_configs.log
 
-    echo "Done EMI analyzing $nfiles, output: ${run_dir}" | mail -s "Done EMI $nfiles, took $SECONDS seconds" atanu.quanta@gmail.com
+    echo "Done EMIRPC analyzing $nfiles, output: ${run_dir}" | mail -s "Done EMIRPC $nfiles, took $SECONDS seconds" atanu.quanta@gmail.com
     echo -e "\e[96m Took $SECONDS for \"main\" to finish..."
     echo -e "   Exiting...\e[0m"
+    echo "###########################################################################"
     return 0;
 }            
 # Main script ends                                                                   

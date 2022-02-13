@@ -10,7 +10,7 @@ base_output_root_dir="/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/";
 # ********* files that you are going to analyze, this file containing the path list #  
 # ********* must be kept within the "input" directory located at home of this pack. #  
 #atanus_file_list="atanus_common_inputs_ActiveIron.txt";
-atanus_file_list="atanus_common_inputs_new_geom_jan_2022.txt"
+atanus_file_list="atanus_fhc_edep_list_double_gap_rpc_2_layers_20_files.txt"
 #bings_file_list="bings_common_inputs.txt";
 bings_file_list="${atanus_file_list}"
 # **********************************************************************************#
