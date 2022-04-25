@@ -4,10 +4,7 @@ find_package(ROOT REQUIRED COMPONENTS Geom EG MLP XMLIO)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-
-
-
-# EMI
+# EXTMUID
 add_executable(runMuID_EXTMUID_NN muID_inEXTMUID_alone_nodraw_NN.C)
 target_link_libraries(runMuID_EXTMUID_NN PUBLIC EDepSim::edepsim_io ${ROOT_LIBRARIES})
 add_executable(runNN_EXTMUID runNN_EXTMUID.cpp)

@@ -18,7 +18,7 @@
 
 #example commad: source run_ecal.sh n N -yall 
 #
-# where "n" is the first file number and "N" is the number of files starting from nth 
+# where "n" is the first file number (starts from 0 and not 1) and "N" is the number of files starting from nth 
 # to be analyzed
 # -yall will enable all steps, that is the whole NN chain
 

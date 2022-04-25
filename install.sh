@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/bash -i
 # This script builds the package in the build directory, you must run it from the home directory
+
+source set_env.sh
+
 
 echo -e "\e[96mBuilding the EMI package...\e[0m";
 if [[ "${script_dir}" != *"dune"* ]]

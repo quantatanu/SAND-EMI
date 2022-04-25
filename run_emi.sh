@@ -18,13 +18,13 @@
 
 #example commad: source run_emi.sh n N -yall 
 #
-# where "n" is the first file number and "N" is the number of files starting from nth 
+# where "n" is the first file number (starts from 0 and not 1) and "N" is the number of files starting from nth 
 # to be analyzed
 # -yall will enable all steps, that is the whole NN chain
 
 #####################################################################################
 
-
+reset;
 
 
 
@@ -33,21 +33,32 @@ t_stamp=$(date +"%Y%m%d%H%M%S");
 main ()
 {
 
+    
     echo "###########################################################################"
     echo "Starting the run_emi.sh script..."
     # checking if environment is set correctly
+    if [[ "${set_env}" == "0" ]]
+    then
+        echo -e "\e[31mPlease set the environment vars first by sourcing set_env.sh in the main dir.\e[0m"
+        return 1
+    fi
+    
+
     if [[ "${script_dir}" != *"dune"* ]]
     then
         # setting environmental variables 
         echo -e "\e[31mPlease set the environment vars first by sourcing set_env.sh in the main dir.\e[0m"
-        return 1
+        return 2
     fi
+
+
 
     # right executable directory check
     if [[ "$(pwd)/" != *"${script_dir}"* ]]
     then
         echo -e "\e[31m    Error: must be run from: \"${script_dir}\"!"
         echo -e "   Exiting...\e[0m"
+        return 3
     else
         if [[ "$@" == *"-C"*  ]]
         then

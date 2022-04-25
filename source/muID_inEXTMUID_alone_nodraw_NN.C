@@ -393,7 +393,7 @@ double E2PE(double E)
 
 
 void showAll(){
-  std::cout<<"============================================="<<std::endl;
+    std::cout<<"==============showAll  STARTS================"<<std::endl;
 /*  for (std::vector<TG4Trajectory>::iterator
          t = event->Trajectories.begin();
        t != event->Trajectories.end(); ++t) {
@@ -407,7 +407,7 @@ void showAll(){
   }*/
   for (auto d = event->SegmentDetectors.begin();
     d != event->SegmentDetectors.end(); ++d) {
-    if(d->first!="EMISci") continue;
+    if(d->first!="EMIGas") continue;
     //if(d->first!="EMCalSci") continue;
     std::cout << "   det " << d->first;
     std::cout << " " << d->second.size();
@@ -446,11 +446,10 @@ void showAll(){
     }
   }
 
-  std::cout<<"============================================="<<std::endl;
-
-
-
+  std::cout<<"=========== showAll ENDS ===================="<<std::endl;
 }
+
+
 std::vector<std::string> makefilelist(std::string st,int Nfilelist=0){
   // if Nfilelist is 0, then the default means input all the lines/files  i have.
   std::vector<std::string> files;
@@ -494,12 +493,12 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
   }
   else{  // pion
     ihit=0;
-    nhit=event->SegmentDetectors["EMISci"].size();
+    nhit=event->SegmentDetectors["EMIGas"].size();
   }
 
 
   for(unsigned int i=ihit; i<(ihit+nhit); i++){
-    const TG4HitSegment& h = event->SegmentDetectors["EMISci"].at(i);
+    const TG4HitSegment& h = event->SegmentDetectors["EMIGas"].at(i);
     double de=h.EnergyDeposit;
     double x = 0.5*(h.Start.X()+h.Stop.X());
     double y = 0.5*(h.Start.Y()+h.Stop.Y());
@@ -669,7 +668,7 @@ int getInfo(std::map<int, std::pair<int, double> > Id_npe_earliestT, double &ear
     //std::cout << "Line: " << __LINE__ << ", planeID: " << planeId << ", modId: " << modId << ", id: " << ", cellId: " << cellId << ", modCellId: " << modCellId  << "\n";
     //double cellcalE=cell.second.first/npe1MeV;
     double cellcalE;
-    for (const TG4HitSegment& h: event->SegmentDetectors["EMISci"])
+    for (const TG4HitSegment& h: event->SegmentDetectors["EMIGas"])
     {
         double de=h.EnergyDeposit;
         cellcalE=de*npe1MeV;
@@ -809,13 +808,13 @@ void organizeHits(){
       ++it;
   }
 
-  if(event->SegmentDetectors["EMISci"].size()>0){
-    pretrackid=event->SegmentDetectors["EMISci"].begin()->Contrib[0];
+  if(event->SegmentDetectors["EMIGas"].size()>0){
+    pretrackid=event->SegmentDetectors["EMIGas"].begin()->Contrib[0];
     nhit=1;
     istart=0;
     posttrackid=pretrackid;
-    for(unsigned long i=1; i<event->SegmentDetectors["EMISci"].size(); i++){
-      posttrackid=event->SegmentDetectors["EMISci"].at(i).Contrib[0];
+    for(unsigned long i=1; i<event->SegmentDetectors["EMIGas"].size(); i++){
+      posttrackid=event->SegmentDetectors["EMIGas"].at(i).Contrib[0];
       if(posttrackid==pretrackid) { nhit++;continue;}
       if(extmuidMap.find(pretrackid) ==extmuidMap.end())
         extmuidMap[pretrackid]= std::make_pair(istart,nhit);
@@ -877,20 +876,23 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
   prePos=mid;
   TString name=geo->FindNode(mid.X(),mid.Y(),mid.Z())->GetName();
   bool firstHor;
-  if(name.Contains("horizontal")){
+  //if(name.Contains("horizontal")){
+  //std::cout << "LINE: " << __LINE__ << "NAME: " << name << "\n";
+  if(name.Contains("horizontal") || name.Contains("hh")){ //changed from just horizontal to horizontal or hh by atanu on 24th april 2022
+      //std::cout << "LINE: " << __LINE__ << "[hor match] NAME: " << name << "\n";
     y_h.push_back(mid.Y());
     z_h.push_back(mid.Z());
     t_h.push_back(mid.T());
     firstHor=true;
-  }
-  else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+  } else if(name.Contains("ver") || name.Contains("vv")) {   //changed by atanu from vv to ver on 24 Apr. 2022
+    //std::cout << "LINE: " << __LINE__ << "[VER match] NAME: " << name << "\n";
     x_v.push_back(mid.X());
     z_v.push_back(mid.Z());
     t_v.push_back(mid.T());
     firstHor=false;
-  }
-  else {
-    std::cout<<"----------> its not horizontal or ver, but name:"<<name<<std::endl;
+  } else {
+    //std::cout << "LINE: " << __LINE__ << "[NO MATCH] NAME: " << name << "\n";
+    std::cout<<"!!!!!!!!!!!!!!!!!!!! its not horizontal or ver, but name: "<< name << ", VER CONDITION: "<< name.Contains("ver") << std::endl;
   }
 
   for( ;i<(ihit+nhit);i++){
@@ -902,12 +904,12 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
     if(h.EnergyDeposit<250E-6) continue;
 
     name=geo->FindNode(postPos.X(),postPos.Y(),postPos.Z())->GetName();
-    if(name.Contains("horizontal")){
+    if(name.Contains("horizontal") || name.Contains("hh")){
       y_h.push_back(postPos.Y());
       z_h.push_back(postPos.Z());
       t_h.push_back(postPos.T());
     }  
-    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv") || name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
       x_v.push_back(postPos.X());
       z_v.push_back(postPos.Z());
       t_v.push_back(postPos.T());
@@ -1393,6 +1395,10 @@ void getYokeSurfaceInfo(int trackid, int &iOuter, int &iInner){
 
 
 void getMuPi_kinematics(){
+    //atanu: for debugging doing showAll
+    
+  showAll();
+
   if(debug>=3)  showAll();
   organizeHits();
   int nsttTrack=sttMap.size();
