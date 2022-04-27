@@ -62,7 +62,9 @@ using std::cout;
 std::set<int> fileentry_trk;
 int ientry;
 int ifile;
-double npe1MeV=3.6;
+//double npe1MeV=3.6;
+//double npe1MeV=3.6 * 171.55; //a minimum of 171.55 multiplier required to avoid segfault in the run_NN code
+double npe1MeV=3.6 * 10000.;   
 
 class trackfit{
 
@@ -93,6 +95,8 @@ double centerZ=23910; // mm
 double sigmas=200E-6; // m
 double B=0.6;
 double x0=2.8; // m
+
+double emi_thickness = 21.90; //in mm
 
 double ecal_cut;
 double emi_cut;
@@ -255,9 +259,6 @@ bool inSTT(const TVector3 &pos){
   return inSTT(pos.X(),pos.Y(),pos.Z());
 }
 
-
-
-
 bool inFV(double x, double y, double z){
   //  double centerX=0.;
   if(abs(x)>1490) return false;
@@ -337,7 +338,7 @@ bool inEXTMUIDbarrel(const TVector3 &pos){
     double z=pos.Z();
     double r=sqrt((y-centerY)*(y-centerY)+(z-centerZ)*(z-centerZ));
     //if(r<3300+0.5 || r>3300+0.5+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
-    if(r<3300 || r>3300+20) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
+    if(r<3300 || r>3300+emi_thickness) return false; //inside yoke or completely outside the outer layer which ends at 19 cm (2+15+2) after the yoke end @ 330 cm
     if(abs(x)>2150) return false;
     return true;
 }
@@ -393,8 +394,8 @@ double E2PE(double E)
 
 
 void showAll(){
-    std::cout<<"==============showAll  STARTS================"<<std::endl;
-/*  for (std::vector<TG4Trajectory>::iterator
+    std::cout<<"==============showAll  STARTS================????????????????????????????????????????????????????????????"<<std::endl;
+  for (std::vector<TG4Trajectory>::iterator
          t = event->Trajectories.begin();
        t != event->Trajectories.end(); ++t) {
     std::cout << "   Traj " << t->TrackId;
@@ -404,7 +405,7 @@ void showAll(){
     std::cout<< " E:"<<t->GetInitialMomentum().E();
     std::cout<<" beginpro:"<<t->Points.begin()->Process<<" "<<t->Points.begin()->Subprocess<<" endpro:"<<(t->Points.end()-1)->Process<<" "<<(t->Points.end()-1)->Subprocess;
     std::cout << std::endl;
-  }*/
+  }
   for (auto d = event->SegmentDetectors.begin();
     d != event->SegmentDetectors.end(); ++d) {
     if(d->first!="EMIGas") continue;
@@ -591,7 +592,6 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
     else { continue;}
     id = cellID + 100 * planeID + 1000 * modID;
 
-    //std::cout << "slabstr: " << slabstr << "(slabID: " << slabID << "), plainID: " << planeID << ", cellID: " << cellID << "\n"; 
 
     double en1 = de * Attenuation(d1, planeID);
     double en2 = de * Attenuation(d2, planeID);
@@ -603,6 +603,8 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
     int pe2 = ran->Poisson(ave_pe2);
 //    int npe=pe1+pe2;
     double npe = npe1MeV*h.EnergyDeposit;
+    //double npe = npe1MeV*h.EnergyDeposit * 1000; //random multiplication by 1000 Atanu
+    //std::cout << "slabstr: " << slabstr << "(slabID: " << slabID << "), plainID: " << planeID << ", cellID: " << cellID << " npe = npe1MeV*h.EnergyDeposit: " << npe << " = " <<  npe1MeV << " * " << h.EnergyDeposit << "\n"; 
 
     double t=(h.Start.T()+h.Stop.T())*0.5; //  + ran->Gaus(0,0.26);
 
@@ -772,6 +774,9 @@ void getRMaxMin(double *Id_Evis, double &r, double &max, double &min){
   r=(max-min)/(max+min);  
 }
 
+
+
+//----------------------------------------------------------------------------
 void organizeHits(){
   sttMap.clear();
   extmuidMap.clear();
@@ -985,6 +990,9 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
   return true;
 }
 
+
+
+
 bool sttreconstructable2(int trackid, TVector3 &p3){
   
   
@@ -1014,7 +1022,8 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
     t_h.push_back(mid.T());
     firstHor=true;
   }
-  else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+  //else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+  else if(name.Contains("vv") || name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
     x_v.push_back(mid.X());
     z_v.push_back(mid.Z());
     t_v.push_back(mid.T());
@@ -1037,7 +1046,8 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
       y_h.push_back(postPos.Y());
       z_h.push_back(postPos.Z());
     }  
-    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    //else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv") || name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
       x_v.push_back(postPos.X());
       z_v.push_back(postPos.Z());
     }
@@ -1339,7 +1349,7 @@ bool gettrklengthEXTMUID(double &lenEXTMUID, int trackid, int lastlayer,  double
   extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(lastlayer, dis2extmuid2,endPos);
   if(!extrap_succeed) {  
     return false;}
-  //extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, dis2extmuid1,endPos);
+  //extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0+0.05, is2extmuid1,endPos);
   extrap_succeed=Extrap->extrapolate2EXTMUIDlayer(330.0, dis2extmuid1,endPos);
   if(!extrap_succeed) { std::cout<<"the second extrapolation wrong !!!!!!!"<<std::endl; return false;}
   
@@ -1397,9 +1407,9 @@ void getYokeSurfaceInfo(int trackid, int &iOuter, int &iInner){
 void getMuPi_kinematics(){
     //atanu: for debugging doing showAll
     
-  showAll();
+//  showAll();
 
-  if(debug>=3)  showAll();
+//  if(debug>=3)  showAll();
   organizeHits();
   int nsttTrack=sttMap.size();
   
@@ -1410,6 +1420,7 @@ void getMuPi_kinematics(){
     std::string name=event->Trajectories[trackid].Name;
     BpionNoIC5=false;
 
+    //std::cout << "getMuPi_kinematics: event->Trajectories[ " << trackid << " ].Name = Name: " << name << "\n";
     if(name!="mu+" && name!="mu-" && name!="pi-" && name!="pi+")
       continue;
 
@@ -1427,6 +1438,7 @@ void getMuPi_kinematics(){
     double rad, zc, yc, b;
     double err, chi2_cir[6];
     if(!sttreconstructable3(trackid,p3, initPos, rad, zc, yc, b, err, chi2_cir)) continue;
+    //std::cout << "This track ID: " << trackid << " is STT Reconstructible...\n";
     htrueP[Btype][1]->Fill(trueP);
     
     TVector3 endpos;
@@ -1439,14 +1451,18 @@ void getMuPi_kinematics(){
     daughterNames.clear();
     bool endinYoke;
     bool interact_inextmuid=Interact_InEXTMUID(endinYoke, trackid, intX, intY, intZ, DaughterIds, daughterNames); // have daughters or not
+    //std::cout << "interact_inextmuid: " << interact_inextmuid << "\n";
     if(endinYoke) continue;
+    //std::cout << "It has crossed the Yoke...\n";
     htrueP[Btype][2]->Fill(trueP);
     std::map<int, std::pair<int,double> > Id_npe_earliestT;
 
     double extmuidTdiff;
 
     bool haveExtmuidhits=findEvis_inextmuid(interact_inextmuid, isBkg, trackid, intX, intY, intZ, Id_npe_earliestT, extmuidTdiff, DaughterIds);
+    //std::cout << "haveExtmuidhits: " << haveExtmuidhits << "\n";
     if(!haveExtmuidhits) continue;
+    //std::cout << "Yes... haveExtmuidhits\n";
     htrueP[Btype][3]->Fill(trueP);
 
     chi2_cir[3]*=1000000;
@@ -1458,7 +1474,7 @@ void getMuPi_kinematics(){
     }
 
     herr_cir[Btype]->Fill(err);
-    if(isBkg && chi2_cir[1]>110 ) { /*std::cout<<"ientry:"<<ientry<<"  trackid:"<<trackid<<"  name:"<<name<<" chi2_cir:"<<chi2_cir[0]<<" err:"<<err<<" chi2_cir[1]:"<<chi2_cir[1]<<" chi2_cir[2]:"<<chi2_cir[2]<<" chi2_cir[3]:"<<chi2_cir[3]<<std::endl; */ continue;}
+    //if(isBkg && chi2_cir[1]>110 ) { /*std::cout<<"ientry:"<<ientry<<"  trackid:"<<trackid<<"  name:"<<name<<" chi2_cir:"<<chi2_cir[0]<<" err:"<<err<<" chi2_cir[1]:"<<chi2_cir[1]<<" chi2_cir[2]:"<<chi2_cir[2]<<" chi2_cir[3]:"<<chi2_cir[3]<<std::endl; */ continue;}
     if(!isBkg && chi2_cir[1]>110 ) { std::cout<<"ientry:"<<ientry<<"  trackid:"<<trackid<<"  name:"<<name<<" chi2_cir:"<<chi2_cir[0]<<" err:"<<err<<"       chi2_cir[1]:"<<chi2_cir[1]<<std::endl; }
     
     htrueP[Btype][4]->Fill(trueP);
@@ -1473,7 +1489,9 @@ void getMuPi_kinematics(){
 
     double earliestT, earliestCellE;
     int  latestLayer=getInfo(Id_npe_earliestT,earliestCellE, earliestT, layer_Evis, layer_Ncell, layer_Span, layer_Dis,cellEmax,cellEmin,cellEavg,cellEr, cellNtot);
+    //std::cout << "latestLayer: " << latestLayer << "\n";
     if(latestLayer!=0) continue;
+    //std::cout << "latestLayer: " << latestLayer << "\n";
     double mreco,mreco2;
     
     if(interact_inextmuid){
@@ -1506,7 +1524,7 @@ void getMuPi_kinematics(){
       double r02center=sqrt(pow(zc-centerZ,2)+ pow(yc-centerY,2));
       if((r02center+rad)<3330) { std::cout<<"------> the circle simply doesnot reach EXTMUID, --> ientry:"<<ientry<<"  trackid:"<<trackid<<std::endl; continue;}
       //if((r02center+rad)>3330+0.5+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
-      if((r02center+rad)>3330+20) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
+      if((r02center+rad)>3330+emi_thickness) { std::cout<<"------>the circle outer layer is out of EXTMUID, weird, check!!!"<<std::endl; continue;}
 
       int pdg=event->Trajectories[trackid].PDGCode;
       double charge=dbpdg->GetParticle(pdg)->Charge()/3.;
@@ -1967,9 +1985,9 @@ int main(int argc, char *argv[]){
       TLorentzVector vtx=event->Primaries.begin()->GetPosition();
       if(!inFV(vtx.X(),vtx.Y(),vtx.Z())) continue;
 
-      if(debug>=3) showAll();
+//      if(debug>=3) showAll();
       getMuPi_kinematics(); 
-        showAll();
+//        showAll();
     }
     file->Close();
 

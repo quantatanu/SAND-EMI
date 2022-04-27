@@ -95,10 +95,11 @@ void extrapolatorEXTMUID::Go(double lenyz, TVector3 &pos){
 }
 
 void extrapolatorEXTMUID::plot(const char* name){
-  
+  //double emi_thickness = 21.9/10.; 
   double sttr=200;
-  double thickness[1]={2};
-  double r6[2];
+  double thickness[1]={2.19};
+   //double r6[2];
+   double r6[1];
   //r6[0]=330+0.05;
   r6[0]=330;
   r6[1]=r6[0]+thickness[0];
