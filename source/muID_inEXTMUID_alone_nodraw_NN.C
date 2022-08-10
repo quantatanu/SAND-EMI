@@ -603,8 +603,6 @@ bool findEvis_inextmuid(bool interact_inextmuid, bool isbkg, int trackid, double
     int pe2 = ran->Poisson(ave_pe2);
 //    int npe=pe1+pe2;
     double npe = npe1MeV*h.EnergyDeposit;
-    //double npe = npe1MeV*h.EnergyDeposit * 1000; //random multiplication by 1000 Atanu
-    //std::cout << "slabstr: " << slabstr << "(slabID: " << slabID << "), plainID: " << planeID << ", cellID: " << cellID << " npe = npe1MeV*h.EnergyDeposit: " << npe << " = " <<  npe1MeV << " * " << h.EnergyDeposit << "\n"; 
 
     double t=(h.Start.T()+h.Stop.T())*0.5; //  + ran->Gaus(0,0.26);
 

@@ -891,7 +891,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
 	//    ma->DrawMarker(mid.Z(),mid.Y());
 	firstHor=true;
     }
-    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv") ||name.Contains("ver") ) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	x_v.push_back(mid.X());
 	z_v.push_back(mid.Z());
 	t_v.push_back(mid.T());
@@ -919,7 +919,7 @@ bool  sttreconstructable3(int trackid, TVector3 &p3, TVector3 &initPos, double &
 	    //      postPos.Print();
 	    //      ma->DrawMarker(postPos.Z(),postPos.Y());
 	}  
-	else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	else if(name.Contains("vv") ||name.Contains("ver") ) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	    x_v.push_back(postPos.X());
 	    z_v.push_back(postPos.Z());
 	    t_v.push_back(postPos.T());
@@ -1036,7 +1036,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
 	t_h.push_back(mid.T());
 	firstHor=true;
     }
-    else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+    else if(name.Contains("vv") ||name.Contains("ver") ) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	x_v.push_back(mid.X());
 	z_v.push_back(mid.Z());
 	t_v.push_back(mid.T());
@@ -1059,7 +1059,7 @@ bool sttreconstructable2(int trackid, TVector3 &p3){
 	    y_h.push_back(postPos.Y());
 	    z_h.push_back(postPos.Z());
 	}  
-	else if(name.Contains("vv")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
+	else if(name.Contains("vv") || name.Contains("ver")) {   //STT_gra_42_ST_ver_ST_air_lv_PV_0
 	    x_v.push_back(postPos.X());
 	    z_v.push_back(postPos.Z());
 	}

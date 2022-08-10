@@ -13,8 +13,8 @@ base_output_root_dir="/pnfs/dune/persistent/users/anath/EXTMUID_ANALYSIS/ROOT/";
 #atanus_file_list="atanus_common_inputs_ActiveIron.txt";
 #atanus_file_list="atanus_fhc_edep_list_double_gap_rpc_2_layers_20_files_16feb2022.txt" 
 #atanus_file_list="atanus_fhc_edep_muon_gun_double_gap_rpc_2_layers_1_files_apr_19_2022.txt"
-atanus_file_list="atanus_fhc_edep_list_double_gap_rpc_2_layers_20_files_20apr2022.txt"      
 #atanus_file_list="atanus_common_inputs_ActiveIron_back.txt";
+atanus_file_list="atanus_fhc_edep_list_double_gap_rpc_2_layers_20_files_20apr2022.txt"      
 
 
 
